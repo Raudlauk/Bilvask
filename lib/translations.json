@@ -137,5 +137,15 @@
   "Du kan bestille bilvask tirsdag, onsdag og fredag. Mandag og torsdag er reservert, og vi holder stengt i helgene.": "Book a car wash on Tuesday, Wednesday or Friday. Mondays and Thursdays are reserved, and weekends are closed.",
   "Fullbooket": "Fully booked",
   "Kunne ikke hente ledige dager. Prøv igjen.": "Could not load available days. Please try again.",
-  "Grå dager kan ikke bestilles. Fullbookede dager har fire bestillinger.": "Grey dates cannot be booked. Fully booked dates have four bookings."
+  "Grå dager kan ikke bestilles. Fullbookede dager har fire bestillinger.": "Grey dates cannot be booked. Fully booked dates have four bookings.",
+  "Avbestill": "Cancel booking",
+  "Avbestille denne bilvasken?": "Cancel this car wash?",
+  "Bestillingen fjernes, og plassen blir tilgjengelig for andre.": "The booking will be removed and its place made available to others.",
+  "Behold bestillingen": "Keep booking",
+  "Bekreft avbestilling": "Confirm cancellation",
+  "Avbestiller…": "Cancelling…",
+  "Bestillingen er avbestilt. Tidspunktet og plassen er ledige igjen.": "Booking cancelled. The time and capacity are available again.",
+  "Kunne ikke avbestille. Prøv igjen.": "Could not cancel. Please try again.",
+  "Ugyldig bestilling.": "Invalid booking.",
+  "Bestillingen er allerede fjernet. Oppdater arbeidslisten.": "This booking has already been removed. Refresh the schedule."
 }

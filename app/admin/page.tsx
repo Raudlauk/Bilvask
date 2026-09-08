@@ -1,5 +1,6 @@
 'use client';
 import { ContactSection } from '@/components/contact';
+import {AlertDialog,AlertDialogContent,AlertDialogHeader,AlertDialogTitle,AlertDialogDescription,AlertDialogFooter,AlertDialogCancel,AlertDialogAction} from '@/components/ui/alert-dialog';
 import { useLanguage, LanguagePicker } from '@/components/language';
 import { useState, useEffect, useRef } from 'react';
 import { Droplets, ArrowLeft, CalendarDays, RefreshCw } from 'lucide-react';
@@ -18,6 +19,13 @@ export default function Admin() {
  const {t,language}=useLanguage();
  const activeRequest = useRef<AbortController | null>(null);
  const [requiresPasswordChange,setRequiresPasswordChange]=useState(false);
+ const [cancelJob,setCancelJob]=useState<Job|null>(null),[cancelError,setCancelError]=useState(''),[cancelBusy,setCancelBusy]=useState(false),[cancelNotice,setCancelNotice]=useState('');
+ async function cancelBooking(){if(!cancelJob)return;setCancelBusy(true);setCancelError('');try{
+   const response=await fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'cancel-booking',id:cancelJob.id})});
+   const data=await response.json() as {error?:string};
+   if(!response.ok){if(response.status===401){setLogged(false);setJobs([]);setCancelJob(null)}throw new Error(data.error)}
+   setJobs(rows=>rows.filter(row=>row.id!==cancelJob.id));setCancelJob(null);setCancelNotice('Bestillingen er avbestilt. Tidspunktet og plassen er ledige igjen.');await load();
+ }catch(e){setCancelError(e instanceof Error?e.message:'Kunne ikke avbestille. Prøv igjen.')}finally{setCancelBusy(false)}}
   const [logged, setLogged] = useState(false),
     [checking, setChecking] = useState(true),
     [username, setUsername] = useState(''),
@@ -134,6 +142,7 @@ export default function Admin() {
           <ArrowLeft size={16} /> {t("Tilbake til bestilling")} </a>
       </div></header>
       <main className="admin-wrap">
+        {logged&&cancelNotice&&<p className="success" role="status">{t(cancelNotice)}</p>}
         {checking && !logged ? (
           <p role="status">{t("Laster ansattsiden…")}</p>
         ) : !logged ? (
@@ -321,6 +330,7 @@ export default function Admin() {
                         <a href={'tel:' + j.phone.replace(/[^+\d]/g, '')}>
                           {j.phone}
                         </a>
+                        <button className="secondary cancel-booking" onClick={()=>{setCancelJob(j);setCancelError('');setCancelNotice('')}}>{t('Avbestill')}</button>
                       </article>
                     ))}
                   </div>
@@ -338,6 +348,13 @@ export default function Admin() {
         )}
         {logged && !requiresPasswordChange && <ContactSection edit />}
       </main>
+      <AlertDialog open={!!cancelJob} onOpenChange={open=>{if(!open&&!cancelBusy)setCancelJob(null)}}>
+        <AlertDialogContent className="cancel-dialog">
+          <AlertDialogHeader><AlertDialogTitle>{t('Avbestille denne bilvasken?')}</AlertDialogTitle><AlertDialogDescription>{cancelJob&&<>{cancelJob.name}<br/>{dateLabel(cancelJob.date,language)} · {timeLabel(cancelJob.start)}–{timeLabel(cancelJob.start+cancelJob.duration)}<br/></>}{t('Bestillingen fjernes, og plassen blir tilgjengelig for andre.')}</AlertDialogDescription></AlertDialogHeader>
+          {cancelError&&<p className="error" role="alert">{t(cancelError)}</p>}
+          <AlertDialogFooter><AlertDialogCancel className="secondary" disabled={cancelBusy}>{t('Behold bestillingen')}</AlertDialogCancel><AlertDialogAction className="primary" disabled={cancelBusy} onClick={cancelBooking}>{t(cancelBusy?'Avbestiller…':'Bekreft avbestilling')}</AlertDialogAction></AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

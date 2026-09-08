@@ -80,6 +80,13 @@ export async function POST(req: Request) {
         .run();
       return json({ ok: true }, 200, { 'Set-Cookie': cookie(req, '', 0) });
     }
+    if (b.action === 'cancel-booking') {
+      if((await getAdmin()).version===1)return json({error:'Bytt standardpassordet først.'},403);
+      if(typeof b.id!=='string'||!/^[a-f0-9-]{36}$/.test(b.id))return json({error:'Ugyldig bestilling.'},400);
+      const result=await db().prepare('DELETE FROM bookings WHERE id=?').bind(b.id).run();
+      if(!result.meta.changes)return json({error:'Bestillingen er allerede fjernet. Oppdater arbeidslisten.'},404);
+      return json({ok:true});
+    }
     if (b.action === 'credentials') {
       if (await throttle(req,'credentials',10) || await throttle(req,'credentials-account',20,true)) return json({error:'For mange forsøk. Prøv igjen om 15 minutter.'},429);
       const admin = await getAdmin();

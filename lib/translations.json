@@ -160,5 +160,15 @@
   "Påfyll av spylervæske": "Refill windshield washer fluid",
   "Kun sammen med bilvask. Ingen ekstra tid.": "Only with a car wash. No extra time.",
   "Pris for bilvask": "Car wash price",
-  "Prisen er endret. Se den nye prisen og bekreft på nytt.": "The price has changed. Check the new price and confirm again."
+  "Prisen er endret. Se den nye prisen og bekreft på nytt.": "The price has changed. Check the new price and confirm again.",
+  "Ingen nylig bestilling å vise.": "No recent booking to display.",
+  "Bekreftelsen er utløpt eller bestillingen er avbestilt.": "The confirmation has expired or the booking has been cancelled.",
+  "Kunne ikke hente bekreftelsen. Prøv igjen.": "Could not load the confirmation. Please try again.",
+  "Henter bekreftelsen…": "Loading confirmation…",
+  "BESTILLING BEKREFTET": "BOOKING CONFIRMED",
+  "Timen din er bestilt!": "Your car wash is booked!",
+  "Vi gleder oss til å se deg,": "We look forward to seeing you,",
+  "Tillegg": "Extra",
+  "Bestill ny bilvask": "Book another car wash",
+  "Bestillingsbekreftelse": "Booking confirmation"
 }

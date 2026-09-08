@@ -67,7 +67,7 @@ export async function POST(req: Request) {
         { error: 'Tiden eller denne delen av dagen er fullbooket. Velg en annen tid eller dato.' },
         409,
       );
-    return json({ id, name, date, start, duration, inside, outside,fluid,price }, 201);
+    return json({ id, name, date, start, duration, inside, outside,fluid,price }, 201,{'Set-Cookie':`steam_receipt=${id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=3600${new URL(req.url).protocol==='https:'?'; Secure':''}`});
   } catch (error) {
     if(error instanceof SyntaxError)return json({error: 'Ugyldig forespørsel.'},400);
     return json(

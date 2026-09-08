@@ -152,7 +152,7 @@ function Booking({ inside, outside,fluid,price,priceReady,refreshPrices }: { ins
     [name, setName] = useState(''),
     [phone, setPhone] = useState(''),
     [revision, setRevision] = useState(0),
-    [confirmation, setConfirmation] = useState<any>(null);
+    [redirecting, setRedirecting] = useState(false);
   const duration = (Number(inside) + Number(outside)) * 30;
   const [fullDates,setFullDates]=useState<string[]>([]),[calendarMonth,setCalendarMonth]=useState(''),[calendarError,setCalendarError]=useState('');
   useEffect(()=>{
@@ -234,7 +234,8 @@ function Booking({ inside, outside,fluid,price,priceReady,refreshPrices }: { ins
         }
         throw new Error(b.error);
       }
-      setConfirmation(b);
+      setRedirecting(true);
+      window.location.assign('/bekreftelse');
       setRevision(r=>r+1);
     } catch (e) {
       setError(e instanceof Error ? e.message : t("Prøv igjen."));
@@ -242,37 +243,6 @@ function Booking({ inside, outside,fluid,price,priceReady,refreshPrices }: { ins
       setBusy(false);
     }
   }
-  if (confirmation)
-    return (
-      <div className="success" role="status">
-        <ShieldCheck size={35} />
-        <h2>{t("Timen er bestilt,")} {confirmation.name}.</h2>
-        <p>
-          {dateLabel(confirmation.date, language)} · {timeLabel(confirmation.start)}–
-          {timeLabel(confirmation.start + confirmation.duration)}
-        </p>
-        <p>
-          {confirmation.inside && confirmation.outside
-            ? t("Innvendig og utvendig vask")
-            : confirmation.inside
-              ? t("Innvendig vask")
-              : t("Utvendig vask")}{' '}
-          · {confirmation.duration} {t("minutter")} </p>
-        {confirmation.fluid&&<p>{t('Påfyll av spylervæske')}</p>}
-        <p>{t('Pris for bilvask')}: {confirmation.price===null?t('Pris avtales'):money(confirmation.price,language)}</p>
-        <p className="muted"> {t("Alle klokkeslett er i norsk tid. Ta vare på bestillingsdetaljene.")} </p>
-        <button
-          className="secondary"
-          onClick={() => {
-            setConfirmation(null);
-            setName('');
-            setPhone('');
-            setStart(null);
-            setRevision((r) => r + 1);
-          }}
-        > {t("Bestill en ny vask")} </button>
-      </div>
-    );
   return (
     <form onSubmit={submit}>
       <div className="calendar-head">
@@ -393,7 +363,7 @@ function Booking({ inside, outside,fluid,price,priceReady,refreshPrices }: { ins
       )}
       <button
         className="primary book-submit"
-        disabled={busy || loading || start === null || !duration || !priceReady}
+        disabled={busy || redirecting || loading || start === null || !duration || !priceReady}
         type="submit"
       >
         <span>{busy ? t("Bekrefter…") : t("Bekreft bestilling")}</span>

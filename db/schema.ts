@@ -1,4 +1,11 @@
 import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
+export const contact = sqliteTable('contact', {
+  id: integer('id').primaryKey(),
+  name: text('name').notNull().default(''),
+  phone: text('phone').notNull().default(''),
+  email: text('email').notNull().default(''),
+  address: text('address').notNull().default(''),
+});
 export const bookings = sqliteTable(
   'bookings',
   {

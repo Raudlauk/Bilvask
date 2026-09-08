@@ -1,4 +1,5 @@
 'use client';
+import { ContactSection } from '@/components/contact';
 import { useLanguage, LanguagePicker } from '@/components/language';
 import { useState, useEffect, useRef } from 'react';
 import { Droplets, ArrowLeft, CalendarDays, RefreshCw } from 'lucide-react';
@@ -335,6 +336,7 @@ export default function Admin() {
             )}
           </>
         )}
+        {logged && !requiresPasswordChange && <ContactSection edit />}
       </main>
     </>
   );

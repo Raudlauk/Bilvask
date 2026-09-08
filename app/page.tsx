@@ -1,4 +1,5 @@
 'use client';
+import { ContactSection } from '@/components/contact';
 import { useLanguage, LanguagePicker } from '@/components/language';
 import { useState, useEffect } from 'react';
 import { today, blocked, timeLabel, dateLabel } from '@/lib/schedule';
@@ -81,7 +82,7 @@ export default function Home() {
               <b>02</b>
               <h2>{t("Velg dato og tidspunkt")}</h2>
             </div>
-            <p className="notice"> {t("Du kan bestille bilvask tirsdag, onsdag og fredag. Mandag og torsdag er reservert. Stengt lørdag og søndag., og vi holder stengt i helgene.")} </p>
+            <p className="notice"> {t("Du kan bestille bilvask tirsdag, onsdag og fredag. Mandag og torsdag er reservert, og vi holder stengt i helgene.")} </p>
             <Booking inside={inside} outside={outside} />
           </section>
           <aside>
@@ -119,6 +120,7 @@ export default function Home() {
             </div>
           </aside>
         </div>
+        <ContactSection />
       </main>
       <footer>
         <span>{t("Steam / BILVASK")}</span>
@@ -292,7 +294,7 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
           );
         })}
       </div>
-      <p className="muted">
+      <p className="muted calendar-caption">
         {date ? dateLabel(date, language) : t("Velg en ledig dato ovenfor.")} · {t('norsk tid')}
       </p>
       {loading ? (
@@ -320,7 +322,7 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
       {!duration && (
         <p className="notice">{t("Velg minst én vask for å se ledige tider.")}</p>
       )}
-      <div className="section-title">
+      <div className="section-title customer-details-heading">
         <b>03</b>
         <h2>{t("Dine opplysninger")}</h2>
       </div>

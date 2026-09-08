@@ -22,6 +22,13 @@
       "when": 1788864625147,
       "tag": "0002_thick_malcolm_colcord",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1788866495231,
+      "tag": "0003_furry_speed",
+      "breakpoints": true
     }
   ]
 }

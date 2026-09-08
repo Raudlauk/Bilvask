@@ -1,4 +1,5 @@
 'use client';
+import {VippsSection} from '@/components/vipps';
 import { ContactSection } from '@/components/contact';
 import {emptyPrices,washTotal,money,type Prices} from '@/lib/prices';
 import { useLanguage, LanguagePicker } from '@/components/language';
@@ -131,6 +132,7 @@ export default function Home() {
             </div>
           </aside>
         </div>
+        <VippsSection />
         <ContactSection />
       </main>
       <footer>

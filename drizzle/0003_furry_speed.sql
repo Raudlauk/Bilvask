@@ -1,0 +1,1 @@
+ALTER TABLE `contact` ADD `vipps` text DEFAULT '' NOT NULL;

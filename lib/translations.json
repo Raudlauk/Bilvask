@@ -170,5 +170,12 @@
   "Vi gleder oss til å se deg,": "We look forward to seeing you,",
   "Tillegg": "Extra",
   "Bestill ny bilvask": "Book another car wash",
-  "Bestillingsbekreftelse": "Booking confirmation"
+  "Bestillingsbekreftelse": "Booking confirmation",
+  "Vipps-nummer": "Vipps number",
+  "Vises i betalingsfeltet. La stå tomt for å skjule.": "Shown in the payment section. Leave blank to hide.",
+  "Betal med Vipps": "Pay with Vipps",
+  "Send betalingen til dette nummeret i Vipps-appen.": "Send your payment to this number in the Vipps app.",
+  "Vipps-nummeret er ikke tilgjengelig akkurat nå.": "The Vipps number is currently unavailable.",
+  "Kontroller Vipps-nummeret.": "Check the Vipps number.",
+  "Trykk for å legge til i kalenderen": "Tap to add to your calendar"
 }

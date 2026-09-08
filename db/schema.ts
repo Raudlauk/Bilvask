@@ -6,6 +6,7 @@ export const contact = sqliteTable('contact', {
   phone: text('phone').notNull().default(''),
   email: text('email').notNull().default(''),
   address: text('address').notNull().default(''),
+  vipps: text('vipps').notNull().default(''),
 });
 export const bookings = sqliteTable(
   'bookings',

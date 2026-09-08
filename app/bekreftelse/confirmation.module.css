@@ -105,3 +105,5 @@
   .details > div { gap: 12px; font-size: 14px; }
   .when { padding: 24px 12px; }
 }
+
+.calendarLink{display:none;color:inherit;text-decoration:none}.calendarLink small{display:block;font-size:12px;margin-top:10px;text-decoration:underline}.calendarLink:focus-visible{outline:3px solid #f47821;outline-offset:6px}@media(max-width:767px) and (pointer:coarse){.desktopTime{display:none}.calendarLink{display:block;min-height:44px}}

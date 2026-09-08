@@ -2,6 +2,7 @@ import { readBody } from '@/lib/server';
 import { db, json, sameOrigin, throttle } from '@/lib/server';
 import { available, validDate } from '@/lib/schedule';
 import { INSERT_BOOKING } from '@/lib/booking-sql';
+import {washTotal,emptyPrices,type Prices} from '@/lib/prices';
 export async function POST(req: Request) {
   if (!sameOrigin(req)) return json({ error: 'Ugyldig forespørsel.' }, 403);
   try {
@@ -35,6 +36,9 @@ export async function POST(req: Request) {
         429,
       );
     const id = crypto.randomUUID();
+    const prices=await db().prepare('SELECT inside,outside FROM prices WHERE id=1').first<Prices>()||emptyPrices;
+    const price=washTotal(prices,inside,outside),fluid=b.fluid===true;
+    if('expectedPrice' in b && b.expectedPrice!==price)return json({error:'Prisen er endret. Se den nye prisen og bekreft på nytt.'},409);
     const result = await db()
       .prepare(INSERT_BOOKING)
       .bind(
@@ -47,6 +51,8 @@ export async function POST(req: Request) {
         Number(inside),
         Number(outside),
         Date.now(),
+        Number(fluid),
+        price,
         date,
         start + duration,
         start,
@@ -61,7 +67,7 @@ export async function POST(req: Request) {
         { error: 'Tiden eller denne delen av dagen er fullbooket. Velg en annen tid eller dato.' },
         409,
       );
-    return json({ id, name, date, start, duration, inside, outside }, 201);
+    return json({ id, name, date, start, duration, inside, outside,fluid,price }, 201);
   } catch (error) {
     if(error instanceof SyntaxError)return json({error: 'Ugyldig forespørsel.'},400);
     return json(

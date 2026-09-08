@@ -1,4 +1,5 @@
 import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
+export const prices=sqliteTable('prices',{id:integer('id').primaryKey(),inside:integer('inside'),outside:integer('outside')});
 export const contact = sqliteTable('contact', {
   id: integer('id').primaryKey(),
   name: text('name').notNull().default(''),
@@ -18,6 +19,8 @@ export const bookings = sqliteTable(
     inside: integer('inside').notNull(),
     outside: integer('outside').notNull(),
     created: integer('created').notNull(),
+    fluid: integer('fluid').notNull().default(0),
+    price: integer('price'),
   },
   (t) => [index('idx_bookings_date_start').on(t.date, t.start)],
 );

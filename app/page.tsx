@@ -1,5 +1,6 @@
 'use client';
 import { ContactSection } from '@/components/contact';
+import {emptyPrices,washTotal,money,type Prices} from '@/lib/prices';
 import { useLanguage, LanguagePicker } from '@/components/language';
 import { useState, useEffect } from 'react';
 import { today, blocked, timeLabel, dateLabel } from '@/lib/schedule';
@@ -15,6 +16,10 @@ export default function Home() {
  const {t,language}=useLanguage();
   const [inside, setInside] = useState(false),
     [outside, setOutside] = useState(true);
+  const [fluid,setFluid]=useState(false),[prices,setPrices]=useState<Prices>(emptyPrices),[priceReady,setPriceReady]=useState(false),[priceError,setPriceError]=useState(''),[priceRevision,setPriceRevision]=useState(0);
+  useEffect(()=>{if(!inside&&!outside)setFluid(false)},[inside,outside]);
+  useEffect(()=>{const controller=new AbortController();setPriceReady(false);setPriceError('');fetch('/api/prices',{signal:controller.signal}).then(async r=>{if(!r.ok)throw new Error('Kunne ikke hente prisene.');setPrices(await r.json() as Prices);setPriceReady(true)}).catch(e=>{if(!controller.signal.aborted)setPriceError(e.message)});return()=>controller.abort()},[priceRevision]);
+  const price=washTotal(prices,inside,outside);
   return (
     <>
       <header>
@@ -73,17 +78,20 @@ export default function Home() {
                   </div>
                   <h3>{s.name}</h3>
                   <p>{s.detail}</p>
+                  <p className="wash-price">{priceReady?(prices[s.id as keyof Prices]===null?t('Pris avtales'):money(prices[s.id as keyof Prices]!,language)):t('Henter priser…')}</p>
                   <span>
                     <Clock3 size={15} /> {t("30 minutter")} </span>
                 </label>
               ))}
             </div>
+            <label className="fluid-option"><Checkbox checked={fluid} disabled={!inside&&!outside} onCheckedChange={value=>setFluid(value && (inside||outside))}/><span><strong>{t('Påfyll av spylervæske')}</strong><small>{t('Kun sammen med bilvask. Ingen ekstra tid.')}</small></span></label>
+            {priceError&&<p className="error" role="alert">{t(priceError)} <button className="secondary" onClick={()=>setPriceRevision(v=>v+1)}>{t('Prøv igjen.')}</button></p>}
             <div className="section-title">
               <b>02</b>
               <h2>{t("Velg dato og tidspunkt")}</h2>
             </div>
             <p className="notice"> {t("Du kan bestille bilvask tirsdag, onsdag og fredag. Mandag og torsdag er reservert, og vi holder stengt i helgene.")} </p>
-            <Booking inside={inside} outside={outside} />
+            <Booking inside={inside} outside={outside} fluid={fluid} price={price} priceReady={priceReady} refreshPrices={()=>setPriceRevision(v=>v+1)} />
           </section>
           <aside>
             <div className="summary">
@@ -105,6 +113,9 @@ export default function Home() {
                 <span>{t("Samlet tid")}</span>
                 <strong>
                   {30 * (Number(inside) + Number(outside))} {t("minutter")} </strong>
+              </div>
+              <div className="summary-foot">
+                <div><p>{t('Pris for bilvask')}: {priceReady?(price===null?t('Pris avtales'):money(price,language)):t('Henter priser…')}</p>{fluid&&<p>{t('Påfyll av spylervæske')}</p>}</div>
               </div>
               <div className="summary-foot">
                 <ShieldCheck />
@@ -129,7 +140,7 @@ export default function Home() {
     </>
   );
 }
-function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
+function Booking({ inside, outside,fluid,price,priceReady,refreshPrices }: { inside: boolean; outside: boolean;fluid:boolean;price:number|null;priceReady:boolean;refreshPrices:()=>void }) {
  const {t,language}=useLanguage();
   const [month, setMonth] = useState(() => today().slice(0, 7)),
     [date, setDate] = useState(''),
@@ -200,7 +211,7 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
       const r = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone, date, start, inside, outside }),
+        body: JSON.stringify({ name, phone, date, start, inside, outside,fluid,expectedPrice:price }),
       });
       const b = (await r.json()) as {
         error?: string;
@@ -211,9 +222,12 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
         duration: number;
         inside: boolean;
         outside: boolean;
+        fluid:boolean;
+        price:number|null;
       };
       if (!r.ok) {
         if (r.status === 409) {
+          refreshPrices();
           setSlots([]);
           setStart(null);
           setRevision(r=>r+1);
@@ -244,6 +258,8 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
               ? t("Innvendig vask")
               : t("Utvendig vask")}{' '}
           · {confirmation.duration} {t("minutter")} </p>
+        {confirmation.fluid&&<p>{t('Påfyll av spylervæske')}</p>}
+        <p>{t('Pris for bilvask')}: {confirmation.price===null?t('Pris avtales'):money(confirmation.price,language)}</p>
         <p className="muted"> {t("Alle klokkeslett er i norsk tid. Ta vare på bestillingsdetaljene.")} </p>
         <button
           className="secondary"
@@ -377,7 +393,7 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
       )}
       <button
         className="primary book-submit"
-        disabled={busy || loading || start === null || !duration}
+        disabled={busy || loading || start === null || !duration || !priceReady}
         type="submit"
       >
         <span>{busy ? t("Bekrefter…") : t("Bekreft bestilling")}</span>

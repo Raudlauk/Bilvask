@@ -1,5 +1,7 @@
 'use client';
 import { ContactSection } from '@/components/contact';
+import {PriceEditor} from '@/components/price-editor';
+import {money} from '@/lib/prices';
 import {AlertDialog,AlertDialogContent,AlertDialogHeader,AlertDialogTitle,AlertDialogDescription,AlertDialogFooter,AlertDialogCancel,AlertDialogAction} from '@/components/ui/alert-dialog';
 import { useLanguage, LanguagePicker } from '@/components/language';
 import { useState, useEffect, useRef } from 'react';
@@ -14,6 +16,8 @@ type Job = {
   duration: number;
   inside: number;
   outside: number;
+  fluid:number;
+  price:number|null;
 };
 export default function Admin() {
  const {t,language}=useLanguage();
@@ -326,6 +330,8 @@ export default function Admin() {
                                 ? t("Innvendig vask")
                                 : t("Utvendig vask")}{' '}
                             · {j.duration} {t("minutter")} </p>
+                          {j.fluid===1&&<p className="fluid-tag">{t('Påfyll av spylervæske')}</p>}
+                          <p>{t('Pris for bilvask')}: {j.price==null?t('Pris avtales'):money(j.price,language)}</p>
                         </div>
                         <a href={'tel:' + j.phone.replace(/[^+\d]/g, '')}>
                           {j.phone}
@@ -346,7 +352,7 @@ export default function Admin() {
             )}
           </>
         )}
-        {logged && !requiresPasswordChange && <ContactSection edit />}
+        {logged && !requiresPasswordChange && <><PriceEditor/><ContactSection edit /></>}
       </main>
       <AlertDialog open={!!cancelJob} onOpenChange={open=>{if(!open&&!cancelBusy)setCancelJob(null)}}>
         <AlertDialogContent className="cancel-dialog">

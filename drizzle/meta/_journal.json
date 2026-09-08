@@ -15,6 +15,13 @@
       "when": 1788861459822,
       "tag": "0001_rapid_sway",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788864625147,
+      "tag": "0002_thick_malcolm_colcord",
+      "breakpoints": true
     }
   ]
 }

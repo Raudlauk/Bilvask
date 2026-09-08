@@ -147,5 +147,18 @@
   "Bestillingen er avbestilt. Tidspunktet og plassen er ledige igjen.": "Booking cancelled. The time and capacity are available again.",
   "Kunne ikke avbestille. Prøv igjen.": "Could not cancel. Please try again.",
   "Ugyldig bestilling.": "Invalid booking.",
-  "Bestillingen er allerede fjernet. Oppdater arbeidslisten.": "This booking has already been removed. Refresh the schedule."
+  "Bestillingen er allerede fjernet. Oppdater arbeidslisten.": "This booking has already been removed. Refresh the schedule.",
+  "Priser for bilvask": "Car wash prices",
+  "Priser i kroner. Tomt felt betyr at pris avtales. Endringer gjelder nye bestillinger.": "Prices in NOK. Leave blank for price on request. Changes apply to new bookings.",
+  "Lagre priser": "Save prices",
+  "Prisene er lagret.": "Prices saved.",
+  "Kunne ikke hente prisene.": "Could not load prices.",
+  "Kunne ikke lagre prisene.": "Could not save prices.",
+  "Oppgi en gyldig pris.": "Enter a valid price.",
+  "Pris avtales": "Price on request",
+  "Henter priser…": "Loading prices…",
+  "Påfyll av spylervæske": "Refill windshield washer fluid",
+  "Kun sammen med bilvask. Ingen ekstra tid.": "Only with a car wash. No extra time.",
+  "Pris for bilvask": "Car wash price",
+  "Prisen er endret. Se den nye prisen og bekreft på nytt.": "The price has changed. Check the new price and confirm again."
 }

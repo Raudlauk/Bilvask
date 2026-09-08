@@ -81,7 +81,7 @@ export default function Home() {
               <b>02</b>
               <h2>{t("Velg dato og tidspunkt")}</h2>
             </div>
-            <p className="notice"> {t("Mandager og torsdager er reservert. Du kan bestille bilvask alle andre dager.")} </p>
+            <p className="notice"> {t("Du kan bestille bilvask tirsdag, onsdag og fredag. Mandag og torsdag er reservert. Stengt lørdag og søndag., og vi holder stengt i helgene.")} </p>
             <Booking inside={inside} outside={outside} />
           </section>
           <aside>
@@ -114,7 +114,7 @@ export default function Home() {
               <Clock3 size={20} />
               <div>
                 <strong>{t("Åpningstider")}</strong>
-                <p> {t("08:00–15:00 · norsk tid")} <br /> {t("Siste starttid kl. 14:00")} <br />{t('Pause 11:30–12:00')}<br />{t('Maks. 4 biler per dag: 2 før pausen og 2 etter.')}<br /> {t("Mandag og torsdag er reservert")} </p>
+                <p> {t("08:00–15:00 · norsk tid")} <br /> {t("Siste starttid kl. 14:00")} <br />{t('Pause 11:30–12:00')}<br />{t('Maks. 4 biler per dag: 2 før pausen og 2 etter.')}<br /> {t("Mandag og torsdag er reservert. Stengt lørdag og søndag.")} </p>
               </div>
             </div>
           </aside>

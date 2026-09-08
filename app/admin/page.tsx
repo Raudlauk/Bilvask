@@ -217,7 +217,7 @@ export default function Admin() {
                 {t(error)}
               </p>
             )}
-            {requiresPasswordChange && <p className="notice" role="status">{t('Bytt standardpassordet før du åpner kundelisten. Velg et unikt passord på minst 15 tegn.')}</p>}
+            {requiresPasswordChange && <p className="notice" role="status">{t('Bytt standardpassordet før du åpner kundelisten. Velg et unikt passord på minst 8 tegn.')}</p>}
             {settings ? (
               <form className="panel settings" onSubmit={save}>
                 <h2>{t("Endre innlogging")}</h2>
@@ -239,7 +239,7 @@ export default function Admin() {
                 </label>
                 <label> {t("Nytt passord")} <input
                     required
-                    minLength={15}
+                    minLength={8}
                     maxLength={200}
                     type="password"
                     autoComplete="new-password"
@@ -249,14 +249,14 @@ export default function Admin() {
                 </label>
                 <label> {t("Bekreft nytt passord")} <input
                     required
-                    minLength={15}
+                    minLength={8}
                     type="password"
                     autoComplete="new-password"
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
                   />
                 </label>
-                <p className="muted"> {t("Bruk minst 15 tegn. Alle ansatte blir logget ut når innloggingen endres.")} </p>
+                <p className="muted"> {t("Bruk minst 8 tegn. Alle ansatte blir logget ut når innloggingen endres.")} </p>
                 <button className="primary" disabled={busy}>
                   {busy ? t("Lagrer…") : t("Lagre innlogging")}
                 </button>

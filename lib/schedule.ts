@@ -20,7 +20,7 @@ export function currentMinutes() {
 }
 export function blocked(date: string) {
   const day = new Date(date + 'T12:00:00Z').getUTCDay();
-  return day === 1 || day === 4;
+  return day === 0 || day === 1 || day === 4 || day === 6;
 }
 export function validDate(date: string) {
   return (

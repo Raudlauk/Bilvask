@@ -94,11 +94,11 @@ export async function POST(req: Request) {
         !username ||
         username.length > 50 ||
         typeof b.password !== 'string' ||
-        b.password.length < 15 ||
+        b.password.length < 8 ||
         b.password.length > 200
       )
         return json(
-          { error: 'Oppgi et brukernavn og et nytt passord på 15–200 tegn.' },
+          { error: 'Oppgi et brukernavn og et nytt passord på 8–200 tegn.' },
           400,
         );
       const salt = crypto.randomUUID(),

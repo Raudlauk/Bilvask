@@ -1,0 +1,107 @@
+.page {
+  width: 100%;
+  max-width: 800px;
+  padding: 48px 24px 72px;
+  margin: 0 auto;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #dce5e5;
+  border-top: 5px solid #f47821;
+  border-radius: 24px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 16px 56px rgb(0 71 93 / 9%);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 24px;
+  background: #edf5f7;
+  border-radius: 50%;
+  color: #007193;
+}
+
+.card h1 {
+  margin: 14px 0 12px;
+  font-size: clamp(28px, 5vw, 40px);
+  font-weight: 700;
+  letter-spacing: -1.2px;
+  line-height: 1.2;
+  color: #263334;
+}
+
+.greeting {
+  margin: 0;
+  color: #526d6f;
+  font-size: 17px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.when {
+  display: grid;
+  gap: 14px;
+  padding: 26px 20px;
+  margin: 30px 0 16px;
+  border-radius: 16px;
+  background: #007193;
+  color: #fff;
+}
+
+.when > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 17px;
+}
+
+.when svg { flex-shrink: 0; width: 22px; height: 22px; }
+.when strong { font-size: clamp(28px, 6vw, 36px); line-height: 1.2; font-weight: 700; }
+
+.details { margin: 0 0 24px; text-align: left; }
+.details > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 0;
+  border-bottom: 1px solid #e3e9e7;
+  line-height: 1.5;
+}
+.details dt { color: #526d6f; }
+.details dd { margin: 0; max-width: 65%; text-align: right; font-weight: 600; overflow-wrap: anywhere; }
+.details > div:last-child dd { font-size: 22px; color: #007193; }
+.card > p:last-of-type { line-height: 1.6; margin: 24px 0 0; }
+
+.newBooking {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 16px 20px;
+  margin-top: 24px;
+  border-radius: 12px;
+  background: #a7aa37;
+  color: #192526;
+  font-weight: 700;
+  line-height: 1.4;
+  text-decoration: none;
+}
+.newBooking:hover { background: #96992f; }
+.newBooking svg { flex-shrink: 0; }
+.newBooking:focus-visible { outline: 3px solid #007193; outline-offset: 4px; }
+
+@media (max-width: 520px) {
+  .page { padding: 24px 16px 40px; }
+  .card { padding: 28px 20px; border-radius: 18px; }
+  .details > div { gap: 12px; font-size: 14px; }
+  .when { padding: 24px 12px; }
+}

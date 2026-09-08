@@ -134,5 +134,8 @@
   "Kunne ikke lagre kontaktinformasjonen.": "Could not save contact information.",
   "Kontroller kontaktinformasjonen.": "Please check the contact information.",
   "Bytt standardpassordet først.": "Change the default password first.",
-  "Du kan bestille bilvask tirsdag, onsdag og fredag. Mandag og torsdag er reservert, og vi holder stengt i helgene.": "Book a car wash on Tuesday, Wednesday or Friday. Mondays and Thursdays are reserved, and weekends are closed."
+  "Du kan bestille bilvask tirsdag, onsdag og fredag. Mandag og torsdag er reservert, og vi holder stengt i helgene.": "Book a car wash on Tuesday, Wednesday or Friday. Mondays and Thursdays are reserved, and weekends are closed.",
+  "Fullbooket": "Fully booked",
+  "Kunne ikke hente ledige dager. Prøv igjen.": "Could not load available days. Please try again.",
+  "Grå dager kan ikke bestilles. Fullbookede dager har fire bestillinger.": "Grey dates cannot be booked. Fully booked dates have four bookings."
 }

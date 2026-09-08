@@ -143,6 +143,20 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
     [revision, setRevision] = useState(0),
     [confirmation, setConfirmation] = useState<any>(null);
   const duration = (Number(inside) + Number(outside)) * 30;
+  const [fullDates,setFullDates]=useState<string[]>([]),[calendarMonth,setCalendarMonth]=useState(''),[calendarError,setCalendarError]=useState('');
+  useEffect(()=>{
+    const controller=new AbortController();let pending=false;
+    async function refresh(){if(pending)return;pending=true;try{
+      const response=await fetch(`/api/availability?month=${month}`,{signal:controller.signal});
+      const data=await response.json() as {fullDates:string[];error?:string};
+      if(!response.ok)throw new Error(data.error);
+      setFullDates(data.fullDates);setCalendarMonth(month);setCalendarError('');
+      if(data.fullDates.includes(date)){setStart(null);setSlots([]);}
+    }catch(e){if(!controller.signal.aborted)setCalendarError('Kunne ikke hente ledige dager. Prøv igjen.')}finally{pending=false}}
+    void refresh();const timer=setInterval(()=>{if(document.visibilityState==='visible')void refresh()},30000);
+    const onFocus=()=>{void refresh()};window.addEventListener('focus',onFocus);
+    return()=>{controller.abort();clearInterval(timer);window.removeEventListener('focus',onFocus)};
+  },[month,date,revision]);
   useEffect(() => {
     setStart(null);
     setSlots([]);
@@ -207,6 +221,7 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
         throw new Error(b.error);
       }
       setConfirmation(b);
+      setRevision(r=>r+1);
     } catch (e) {
       setError(e instanceof Error ? e.message : t("Prøv igjen."));
     } finally {
@@ -283,10 +298,11 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
             <button
               type="button"
               key={d}
-              className={date === d ? 'active' : ''}
-              disabled={d < today() || blocked(d)}
+              className={fullDates.includes(d) ? 'fully-booked' : date === d ? 'active' : ''}
+              disabled={d < today() || blocked(d) || fullDates.includes(d) || calendarMonth!==month || !!calendarError}
               aria-pressed={date === d}
-              aria-label={dateLabel(d, language) + (blocked(d) ? t(", reservert") : '')}
+              aria-label={dateLabel(d, language) + (fullDates.includes(d) ? ', '+t('Fullbooket') : blocked(d) ? t(", reservert") : '')}
+              title={fullDates.includes(d)?t('Fullbooket'):undefined}
               onClick={() => setDate(d)}
             >
               {i + 1}
@@ -294,6 +310,8 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
           );
         })}
       </div>
+      <p className="calendar-legend muted">{t('Grå dager kan ikke bestilles. Fullbookede dager har fire bestillinger.')}</p>
+      {calendarError&&<p role="alert" className="error">{t(calendarError)} <button type="button" className="secondary" onClick={()=>setRevision(r=>r+1)}>{t('Prøv igjen.')}</button></p>}
       <p className="muted calendar-caption">
         {date ? dateLabel(date, language) : t("Velg en ledig dato ovenfor.")} · {t('norsk tid')}
       </p>

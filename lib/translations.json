@@ -115,5 +115,11 @@
   "Ingen bestillinger": "No bookings",
   "på denne datoen": "on this date",
   "ennå": "yet",
-  "30 minutter": "30 minutes"
+  "30 minutter": "30 minutes",
+  "Pause 11:30–12:00": "Break 11:30–12:00",
+  "Maks. 4 biler per dag: 2 før pausen og 2 etter.": "Maximum 4 cars per day: 2 before the break and 2 after.",
+  "Tiden eller denne delen av dagen er fullbooket. Velg en annen tid eller dato.": "This time or half-day is fully booked. Choose another time or date.",
+  "Bytt standardpassordet før du åpner kundelisten. Velg et unikt passord på minst 15 tegn.": "Change the default password before opening the customer list. Choose a unique password with at least 15 characters.",
+  "Oppgi et brukernavn og et nytt passord på 15–200 tegn.": "Enter a username and a new password of 15–200 characters.",
+  "Bruk minst 15 tegn. Alle ansatte blir logget ut når innloggingen endres.": "Use at least 15 characters. Updating the login signs out all workers."
 }

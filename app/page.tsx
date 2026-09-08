@@ -114,7 +114,7 @@ export default function Home() {
               <Clock3 size={20} />
               <div>
                 <strong>{t("Åpningstider")}</strong>
-                <p> {t("08:00–15:00 · norsk tid")} <br /> {t("Siste starttid kl. 14:00")} <br /> {t("Mandag og torsdag er reservert")} </p>
+                <p> {t("08:00–15:00 · norsk tid")} <br /> {t("Siste starttid kl. 14:00")} <br />{t('Pause 11:30–12:00')}<br />{t('Maks. 4 biler per dag: 2 før pausen og 2 etter.')}<br /> {t("Mandag og torsdag er reservert")} </p>
               </div>
             </div>
           </aside>
@@ -144,7 +144,7 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
   useEffect(() => {
     setStart(null);
     setSlots([]);
-    if (!date || !duration) return;
+    if (!date || !duration) {setLoading(false);return;}
     const controller = new AbortController();
     setLoading(true);
     setError('');
@@ -198,8 +198,9 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
       };
       if (!r.ok) {
         if (r.status === 409) {
-          setSlots((s) => s.filter((n) => n !== start));
+          setSlots([]);
           setStart(null);
+          setRevision(r=>r+1);
         }
         throw new Error(b.error);
       }

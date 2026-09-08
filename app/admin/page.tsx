@@ -1,6 +1,6 @@
 'use client';
 import { useLanguage, LanguagePicker } from '@/components/language';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Droplets, ArrowLeft, CalendarDays, RefreshCw } from 'lucide-react';
 import { today, dateLabel, timeLabel } from '@/lib/schedule';
 type Job = {
@@ -15,6 +15,8 @@ type Job = {
 };
 export default function Admin() {
  const {t,language}=useLanguage();
+ const activeRequest = useRef<AbortController | null>(null);
+ const [requiresPasswordChange,setRequiresPasswordChange]=useState(false);
   const [logged, setLogged] = useState(false),
     [checking, setChecking] = useState(true),
     [username, setUsername] = useState(''),
@@ -29,14 +31,18 @@ export default function Admin() {
     [newPassword, setNewPassword] = useState(''),
     [confirm, setConfirm] = useState('');
   async function load() {
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
     setChecking(true);
     setError('');
     try {
-      const r = await fetch('/api/admin' + (date ? '?date=' + date : ''));
+      const r = await fetch('/api/admin' + (date ? '?date=' + date : ''), {signal:controller.signal});
       const b = (await r.json()) as {
         error?: string;
         username: string;
         bookings: Job[];
+        requiresPasswordChange?: boolean;
       };
       if (r.status === 401) {
         setLogged(false);
@@ -46,16 +52,20 @@ export default function Admin() {
       setLogged(true);
       setUsername(b.username);
       setJobs(b.bookings);
+      setRequiresPasswordChange(!!b.requiresPasswordChange);
+      if(b.requiresPasswordChange) setSettings(true);
     } catch (e) {
+      if(controller.signal.aborted) return;
       setError(
         e instanceof Error ? e.message : t("Kunne ikke laste arbeidslisten."),
       );
     } finally {
-      setChecking(false);
+      if(!controller.signal.aborted) setChecking(false);
     }
   }
   useEffect(() => {
     load();
+    return () => activeRequest.current?.abort();
   }, [date]);
   async function action(action: string, extra: Record<string, string> = {}) {
     setBusy(true);
@@ -72,6 +82,7 @@ export default function Admin() {
         username: string;
         bookings: Job[];
       };
+      if(r.status === 401 && action !== 'login'){setLogged(false);setJobs([]);}
       if (!r.ok) throw new Error(b.error);
       return true;
     } catch (e) {
@@ -179,6 +190,7 @@ export default function Admin() {
               <div className="admin-actions">
                 <button
                   className="secondary"
+                  disabled={requiresPasswordChange}
                   onClick={() => {
                     setSettings(!settings);
                     setError('');
@@ -205,6 +217,7 @@ export default function Admin() {
                 {t(error)}
               </p>
             )}
+            {requiresPasswordChange && <p className="notice" role="status">{t('Bytt standardpassordet før du åpner kundelisten. Velg et unikt passord på minst 15 tegn.')}</p>}
             {settings ? (
               <form className="panel settings" onSubmit={save}>
                 <h2>{t("Endre innlogging")}</h2>
@@ -226,7 +239,7 @@ export default function Admin() {
                 </label>
                 <label> {t("Nytt passord")} <input
                     required
-                    minLength={8}
+                    minLength={15}
                     maxLength={200}
                     type="password"
                     autoComplete="new-password"
@@ -236,14 +249,14 @@ export default function Admin() {
                 </label>
                 <label> {t("Bekreft nytt passord")} <input
                     required
-                    minLength={8}
+                    minLength={15}
                     type="password"
                     autoComplete="new-password"
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
                   />
                 </label>
-                <p className="muted"> {t("Bruk minst 8 tegn. Alle ansatte blir logget ut når innloggingen endres.")} </p>
+                <p className="muted"> {t("Bruk minst 15 tegn. Alle ansatte blir logget ut når innloggingen endres.")} </p>
                 <button className="primary" disabled={busy}>
                   {busy ? t("Lagrer…") : t("Lagre innlogging")}
                 </button>

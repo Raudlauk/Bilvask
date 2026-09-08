@@ -55,10 +55,15 @@ export function available(
     ![30, 60].includes(duration)
   )
     return [];
+  if (busy.length >= 4) return [];
+  const morningCount = busy.filter(b => b.start < 720).length;
+  const afternoonCount = busy.filter(b => b.start >= 720).length;
   return Array.from({ length: 13 }, (_, i) => 480 + i * 30).filter(
     (start) =>
       start <= 840 &&
       start + duration <= 900 &&
+      (start + duration <= 690 || start >= 720) &&
+      (start < 720 ? morningCount < 2 : afternoonCount < 2) &&
       (date !== today() || start > currentMinutes()) &&
       !busy.some(
         (b) => start < b.start + b.duration && start + duration > b.start,

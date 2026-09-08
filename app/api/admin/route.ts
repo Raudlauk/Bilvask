@@ -1,3 +1,4 @@
+import { readBody } from '@/lib/server';
 import {
   authorized,
   cookie,
@@ -6,6 +7,7 @@ import {
   getAdmin,
   json,
   passwordHash,
+  passwordMatches,
   sameOrigin,
   sessionToken,
   throttle,
@@ -16,6 +18,7 @@ export async function GET(req: Request) {
     if (!(await authorized(req))) return json({ error: 'Logg inn.' }, 401);
     const date = new URL(req.url).searchParams.get('date');
     const admin = await getAdmin();
+    if (admin.version === 1) return json({username:admin.username,bookings:[],requiresPasswordChange:true});
     if (date && !validDate(date)) return json({ error: 'Ugyldig dato' }, 400);
     const query = date
       ? db()
@@ -32,26 +35,29 @@ export async function GET(req: Request) {
           );
     const rows = await query.all();
     return json({ username: admin.username, bookings: rows.results });
-  } catch {
+  } catch (error) {
+    if(error instanceof SyntaxError)return json({error: 'Ugyldig forespørsel.'},400);
     return json({ error: 'Kunne ikke laste arbeidslisten. Prøv igjen.' }, 503);
   }
 }
 export async function POST(req: Request) {
   if (!sameOrigin(req)) return json({ error: 'Ugyldig forespørsel.' }, 403);
   try {
-    const b = (await req.json()) as Record<string, unknown>;
+    const b = await readBody(req);
     if (b.action === 'login') {
-      if (await throttle(req, 'login', 10))
+      if (await throttle(req, 'login', 10) || await throttle(req, 'login-account', 30, true))
         return json(
           { error: 'For mange forsøk. Prøv igjen om 15 minutter.' },
           429,
         );
       const admin = await getAdmin();
+      const validPassword = typeof b.password === 'string' && b.password.length <= 200
+        ? await passwordMatches(b.password, admin) : false;
       if (
         typeof b.password !== 'string' ||
         b.password.length > 200 ||
         b.username !== admin.username ||
-        (await passwordHash(b.password, admin.salt)) !== admin.hash
+        !validPassword
       )
         return json({ error: 'Feil brukernavn eller passord.' }, 401);
       const token = crypto.randomUUID() + crypto.randomUUID();
@@ -75,11 +81,12 @@ export async function POST(req: Request) {
       return json({ ok: true }, 200, { 'Set-Cookie': cookie(req, '', 0) });
     }
     if (b.action === 'credentials') {
+      if (await throttle(req,'credentials',10) || await throttle(req,'credentials-account',20,true)) return json({error:'For mange forsøk. Prøv igjen om 15 minutter.'},429);
       const admin = await getAdmin();
       if (
         typeof b.currentPassword !== 'string' ||
         b.currentPassword.length > 200 ||
-        (await passwordHash(b.currentPassword, admin.salt)) !== admin.hash
+        !(await passwordMatches(b.currentPassword, admin))
       )
         return json({ error: 'Nåværende passord er feil.' }, 400);
       const username = typeof b.username === 'string' ? b.username.trim() : '';
@@ -87,11 +94,11 @@ export async function POST(req: Request) {
         !username ||
         username.length > 50 ||
         typeof b.password !== 'string' ||
-        b.password.length < 8 ||
+        b.password.length < 15 ||
         b.password.length > 200
       )
         return json(
-          { error: 'Oppgi et brukernavn og et nytt passord på 8–200 tegn.' },
+          { error: 'Oppgi et brukernavn og et nytt passord på 15–200 tegn.' },
           400,
         );
       const salt = crypto.randomUUID(),
@@ -105,7 +112,8 @@ export async function POST(req: Request) {
       return json({ ok: true }, 200, { 'Set-Cookie': cookie(req, '', 0) });
     }
     return json({ error: 'Ukjent handling.' }, 400);
-  } catch {
+  } catch (error) {
+    if(error instanceof SyntaxError)return json({error: 'Ugyldig forespørsel.'},400);
     return json(
       { error: 'Kunne ikke fullføre forespørselen. Prøv igjen.' },
       503,

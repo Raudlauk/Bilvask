@@ -1,9 +1,11 @@
+import { readBody } from '@/lib/server';
 import { db, json, sameOrigin, throttle } from '@/lib/server';
 import { available, validDate } from '@/lib/schedule';
+import { INSERT_BOOKING } from '@/lib/booking-sql';
 export async function POST(req: Request) {
   if (!sameOrigin(req)) return json({ error: 'Ugyldig forespørsel.' }, 403);
   try {
-    const b = (await req.json()) as Record<string, unknown>;
+    const b = await readBody(req);
     const name = typeof b.name === 'string' ? b.name.trim() : '',
       phone = typeof b.phone === 'string' ? b.phone.trim() : '',
       date = typeof b.date === 'string' ? b.date : '',
@@ -34,9 +36,7 @@ export async function POST(req: Request) {
       );
     const id = crypto.randomUUID();
     const result = await db()
-      .prepare(
-        'INSERT INTO bookings (id,name,phone,date,start,duration,inside,outside,created) SELECT ?,?,?,?,?,?,?,?,? WHERE NOT EXISTS (SELECT 1 FROM bookings WHERE date=? AND start<? AND start+duration>?)',
-      )
+      .prepare(INSERT_BOOKING)
       .bind(
         id,
         name,
@@ -50,15 +50,20 @@ export async function POST(req: Request) {
         date,
         start + duration,
         start,
+        date,
+        date,
+        start < 720 ? 0 : 720,
+        start < 720 ? 720 : 1440,
       )
       .run();
     if (!result.meta.changes)
       return json(
-        { error: 'Denne timen ble nettopp bestilt. Velg et annet tidspunkt.' },
+        { error: 'Tiden eller denne delen av dagen er fullbooket. Velg en annen tid eller dato.' },
         409,
       );
     return json({ id, name, date, start, duration, inside, outside }, 201);
-  } catch {
+  } catch (error) {
+    if(error instanceof SyntaxError)return json({error: 'Ugyldig forespørsel.'},400);
     return json(
       { error: 'Kunne ikke bekrefte bestillingen. Prøv igjen.' },
       503,

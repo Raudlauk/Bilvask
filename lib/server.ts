@@ -1,4 +1,5 @@
 import { env } from 'cloudflare:workers';
+import { timingSafeEqual } from 'node:crypto';
 export function db() {
   if (!env.DB) throw new Error('Database unavailable');
   return env.DB;
@@ -10,12 +11,21 @@ export function json(
 ) {
   return Response.json(value, {
     status,
-    headers: { 'Cache-Control': 'no-store', ...extra },
+    headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'same-origin', ...extra },
   });
 }
 export function sameOrigin(req: Request) {
   const origin = req.headers.get('origin');
   return origin === new URL(req.url).origin;
+}
+export async function readBody(req:Request):Promise<Record<string,unknown>> {
+  if(!req.headers.get('content-type')?.startsWith('application/json')) throw new SyntaxError('JSON required');
+  const reader=req.body?.getReader();if(!reader)throw new SyntaxError('Body required');
+  const chunks:Uint8Array[]=[];let size=0;
+  try{while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>4096){await reader.cancel();throw new SyntaxError('Body too large')}chunks.push(value)}}finally{reader.releaseLock()}
+  const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length}
+  const value=JSON.parse(new TextDecoder().decode(bytes));
+  if(!value||typeof value!=='object'||Array.isArray(value))throw new SyntaxError('Object required');return value;
 }
 function hex(bytes: ArrayBuffer) {
   return Array.from(new Uint8Array(bytes), (b) =>
@@ -47,6 +57,11 @@ export async function passwordHash(password: string, salt: string) {
       256,
     ),
   );
+}
+export async function passwordMatches(password: string, admin: {salt:string;hash:string}) {
+  const candidate = new TextEncoder().encode(await passwordHash(password, admin.salt));
+  const expected = new TextEncoder().encode(admin.hash);
+  return candidate.length === expected.length && timingSafeEqual(candidate, expected);
 }
 export async function getAdmin() {
   let row = await db()
@@ -80,7 +95,7 @@ export function sessionToken(req: Request) {
 }
 export async function authorized(req: Request) {
   const token = sessionToken(req);
-  if (!token) return false;
+  if (!/^[a-f0-9-]{72}$/.test(token)) return false;
   return !!(await db()
     .prepare(
       'SELECT s.token FROM sessions s JOIN admins a ON a.id=1 AND a.version=s.version WHERE s.token=? AND s.expires>?',
@@ -91,9 +106,9 @@ export async function authorized(req: Request) {
 export function cookie(req: Request, token: string, age = 28800) {
   return `gleam_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${age}${new URL(req.url).protocol === 'https:' ? '; Secure' : ''}`;
 }
-export async function throttle(req: Request, bucket: string, max: number) {
+export async function throttle(req: Request, bucket: string, max: number, account = false) {
   const key = await digest(
-      bucket + ':' + (req.headers.get('cf-connecting-ip') || 'local'),
+      bucket + ':' + (account ? 'shared-admin' : (req.headers.get('cf-connecting-ip') || 'local')),
     ),
     now = Date.now();
   const row = await db()

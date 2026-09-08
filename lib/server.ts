@@ -16,7 +16,15 @@ export function json(
 }
 export function sameOrigin(req: Request) {
   const origin = req.headers.get('origin');
-  return origin === new URL(req.url).origin;
+  if (origin === new URL(req.url).origin) return true;
+  // An explicit local tunnel origin preserves CSRF protection when a proxy
+  // rewrites the request URL to localhost. Never trust arbitrary forwarded hosts.
+  const configured = (env as unknown as { BOOKING_PUBLIC_ORIGIN?: string }).BOOKING_PUBLIC_ORIGIN;
+  if (!configured || !origin) return false;
+  try {
+    const allowed = new URL(configured);
+    return allowed.protocol === 'https:' && configured === allowed.origin && origin === allowed.origin;
+  } catch { return false; }
 }
 export async function readBody(req:Request):Promise<Record<string,unknown>> {
   if(!req.headers.get('content-type')?.startsWith('application/json')) throw new SyntaxError('JSON required');

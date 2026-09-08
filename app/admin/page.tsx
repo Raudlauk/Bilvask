@@ -1,4 +1,5 @@
 'use client';
+import { useLanguage, LanguagePicker } from '@/components/language';
 import { useState, useEffect } from 'react';
 import { Droplets, ArrowLeft, CalendarDays, RefreshCw } from 'lucide-react';
 import { today, dateLabel, timeLabel } from '@/lib/schedule';
@@ -13,6 +14,7 @@ type Job = {
   outside: number;
 };
 export default function Admin() {
+ const {t,language}=useLanguage();
   const [logged, setLogged] = useState(false),
     [checking, setChecking] = useState(true),
     [username, setUsername] = useState(''),
@@ -46,7 +48,7 @@ export default function Admin() {
       setJobs(b.bookings);
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : 'Kunne ikke laste arbeidslisten.',
+        e instanceof Error ? e.message : t("Kunne ikke laste arbeidslisten."),
       );
     } finally {
       setChecking(false);
@@ -73,7 +75,7 @@ export default function Admin() {
       if (!r.ok) throw new Error(b.error);
       return true;
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Prøv igjen.');
+      setError(e instanceof Error ? e.message : t("Prøv igjen."));
       return false;
     } finally {
       setBusy(false);
@@ -89,7 +91,7 @@ export default function Admin() {
   async function save(e: React.FormEvent) {
     e.preventDefault();
     if (newPassword !== confirm) {
-      setError('De nye passordene er ikke like.');
+      setError(t("De nye passordene er ikke like."));
       return;
     }
     if (
@@ -105,38 +107,35 @@ export default function Admin() {
       setNewPassword('');
       setConfirm('');
       setMessage(
-        'Innloggingen er oppdatert. Logg inn med det nye brukernavnet og passordet.',
+        t("Innloggingen er oppdatert. Logg inn med det nye brukernavnet og passordet."),
       );
     }
   }
   return (
     <>
       <header>
+<div className="header-identity"><a href="https://ynvekst.no/" aria-label="Ytre Namdal Vekst"><img className="yn-logo" src="/yn-vekst-logo.svg" width="174" height="55" alt="Ytre Namdal Vekst" /></a>
         <a className="brand" href="/">
-          <Droplets /> Steam<span>ANSATTSIDE</span>
+          <Droplets /> Steam<span>{t("ANSATTSIDE")}</span>
         </a>
-        <a href="/" className="worker-link">
-          <ArrowLeft size={16} />
-          Tilbake til bestilling
-        </a>
-      </header>
+        </div><div className="header-tools"><LanguagePicker /><a href="/" className="worker-link">
+          <ArrowLeft size={16} /> {t("Tilbake til bestilling")} </a>
+      </div></header>
       <main className="admin-wrap">
         {checking && !logged ? (
-          <p role="status">Laster ansattsiden…</p>
+          <p role="status">{t("Laster ansattsiden…")}</p>
         ) : !logged ? (
           <section className="panel login">
-            <div className="eyebrow">ANSATTSIDE</div>
-            <h1>Velkommen tilbake.</h1>
-            <p className="muted">Logg inn for å se bestilte bilvasker.</p>
+            <div className="eyebrow">{t("ANSATTSIDE")}</div>
+            <h1>{t("Velkommen tilbake.")}</h1>
+            <p className="muted">{t("Logg inn for å se bestilte bilvasker.")}</p>
             {message && (
               <p className="success" role="status">
-                {message}
+                {t(message)}
               </p>
             )}
             <form onSubmit={login}>
-              <label>
-                Brukernavn
-                <input
+              <label> {t("Brukernavn")} <input
                   autoComplete="username"
                   required
                   maxLength={50}
@@ -144,9 +143,7 @@ export default function Admin() {
                   onChange={(e) => setUsername(e.target.value)}
                 />
               </label>
-              <label>
-                Passord
-                <input
+              <label> {t("Passord")} <input
                   type="password"
                   autoComplete="current-password"
                   required
@@ -156,12 +153,12 @@ export default function Admin() {
               </label>
               {error && (
                 <p className="error" role="alert">
-                  {error}
+                  {t(error)}
                 </p>
               )}
               <button className="primary" disabled={busy}>
                 {' '}
-                {busy ? 'Logger inn…' : 'Logg inn →'}
+                {busy ? t("Logger inn…") : t("Logg inn →")}
               </button>
             </form>
           </section>
@@ -169,14 +166,14 @@ export default function Admin() {
           <>
             <div className="admin-top">
               <div>
-                <div className="eyebrow">ANSATTSIDE</div>
+                <div className="eyebrow">{t("ANSATTSIDE")}</div>
                 <h1>
-                  {settings ? 'Innloggingsinnstillinger' : 'Arbeidsliste'}
+                  {settings ? t("Innloggingsinnstillinger") : t("Arbeidsliste")}
                 </h1>
                 <p className="muted">
                   {settings
-                    ? 'Endre den felles innloggingen for ansatte.'
-                    : 'Bestilte bilvasker i tidsrekkefølge. Alle klokkeslett er i norsk tid.'}
+                    ? t("Endre den felles innloggingen for ansatte.")
+                    : t("Bestilte bilvasker i tidsrekkefølge. Alle klokkeslett er i norsk tid.")}
                 </p>
               </div>
               <div className="admin-actions">
@@ -188,8 +185,8 @@ export default function Admin() {
                   }}
                 >
                   {settings
-                    ? 'Tilbake til arbeidslisten'
-                    : 'Innloggingsinnstillinger'}
+                    ? t("Tilbake til arbeidslisten")
+                    : t("Innloggingsinnstillinger")}
                 </button>
                 <button
                   className="secondary"
@@ -200,22 +197,18 @@ export default function Admin() {
                       setJobs([]);
                     }
                   }}
-                >
-                  Logg ut
-                </button>
+                > {t("Logg ut")} </button>
               </div>
             </div>
             {error && (
               <p className="error" role="alert">
-                {error}
+                {t(error)}
               </p>
             )}
             {settings ? (
               <form className="panel settings" onSubmit={save}>
-                <h2>Endre innlogging</h2>
-                <label>
-                  Brukernavn
-                  <input
+                <h2>{t("Endre innlogging")}</h2>
+                <label> {t("Brukernavn")} <input
                     required
                     maxLength={50}
                     autoComplete="username"
@@ -223,9 +216,7 @@ export default function Admin() {
                     onChange={(e) => setUsername(e.target.value)}
                   />
                 </label>
-                <label>
-                  Nåværende passord
-                  <input
+                <label> {t("Nåværende passord")} <input
                     required
                     type="password"
                     autoComplete="current-password"
@@ -233,9 +224,7 @@ export default function Admin() {
                     onChange={(e) => setCurrent(e.target.value)}
                   />
                 </label>
-                <label>
-                  Nytt passord
-                  <input
+                <label> {t("Nytt passord")} <input
                     required
                     minLength={8}
                     maxLength={200}
@@ -245,9 +234,7 @@ export default function Admin() {
                     onChange={(e) => setNewPassword(e.target.value)}
                   />
                 </label>
-                <label>
-                  Bekreft nytt passord
-                  <input
+                <label> {t("Bekreft nytt passord")} <input
                     required
                     minLength={8}
                     type="password"
@@ -256,12 +243,9 @@ export default function Admin() {
                     onChange={(e) => setConfirm(e.target.value)}
                   />
                 </label>
-                <p className="muted">
-                  Bruk minst 8 tegn. Alle ansatte blir logget ut når
-                  innloggingen endres.
-                </p>
+                <p className="muted"> {t("Bruk minst 8 tegn. Alle ansatte blir logget ut når innloggingen endres.")} </p>
                 <button className="primary" disabled={busy}>
-                  {busy ? 'Lagrer…' : 'Lagre innlogging'}
+                  {busy ? t("Lagrer…") : t("Lagre innlogging")}
                 </button>
               </form>
             ) : (
@@ -274,10 +258,9 @@ export default function Admin() {
                     alignItems: 'center',
                   }}
                 >
-                  <label>
-                    Vis dato{' '}
+                  <label> {t("Vis dato")}{' '}
                     <input
-                      aria-label="Dato for arbeidslisten"
+                      aria-label={t("Dato for arbeidslisten")}
                       type="date"
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
@@ -287,45 +270,39 @@ export default function Admin() {
                   <button
                     className="secondary"
                     onClick={() => setDate(today())}
-                  >
-                    I dag
-                  </button>
-                  <button className="secondary" onClick={() => setDate('')}>
-                    Alle kommende
-                  </button>
+                  > {t("I dag")} </button>
+                  <button className="secondary" onClick={() => setDate('')}> {t("Alle kommende")} </button>
                   <button
                     className="secondary"
                     onClick={load}
-                    aria-label="Oppdater arbeidslisten"
+                    aria-label={t("Oppdater arbeidslisten")}
                   >
                     <RefreshCw size={18} />
                   </button>
                 </div>
                 <p className="muted">
-                  {date ? dateLabel(date) : 'Kommende bestillinger'} ·{' '}
-                  {jobs.length} {jobs.length === 1 ? 'bilvask' : 'bilvasker'} ·{' '}
-                  {jobs.reduce((n, j) => n + j.duration, 0)} minutter
-                </p>
+                  {date ? dateLabel(date, language) : t("Kommende bestillinger")} ·{' '}
+                  {jobs.length} {jobs.length === 1 ? t("bilvask") : t("bilvasker")} ·{' '}
+                  {jobs.reduce((n, j) => n + j.duration, 0)} {t("minutter")} </p>
                 {checking ? (
-                  <p role="status">Oppdaterer arbeidslisten…</p>
+                  <p role="status">{t("Oppdaterer arbeidslisten…")}</p>
                 ) : jobs.length ? (
                   <div className="jobs">
                     {jobs.map((j) => (
                       <article key={j.id} className="job">
                         <div className="job-time">
                           {timeLabel(j.start)}–{timeLabel(j.start + j.duration)}
-                          <small>{dateLabel(j.date)}</small>
+                          <small>{dateLabel(j.date, language)}</small>
                         </div>
                         <div>
                           <h3>{j.name}</h3>
                           <p>
                             {j.inside && j.outside
-                              ? 'Innvendig og utvendig vask'
+                              ? t("Innvendig og utvendig vask")
                               : j.inside
-                                ? 'Innvendig vask'
-                                : 'Utvendig vask'}{' '}
-                            · {j.duration} minutter
-                          </p>
+                                ? t("Innvendig vask")
+                                : t("Utvendig vask")}{' '}
+                            · {j.duration} {t("minutter")} </p>
                         </div>
                         <a href={'tel:' + j.phone.replace(/[^+\d]/g, '')}>
                           {j.phone}
@@ -336,12 +313,9 @@ export default function Admin() {
                 ) : (
                   <div className="panel">
                     <CalendarDays size={32} />
-                    <h2>
-                      Ingen bestillinger {date ? 'på denne datoen' : 'ennå'}.
+                    <h2> {t("Ingen bestillinger")} {date ? t("på denne datoen") : t("ennå")}.
                     </h2>
-                    <p className="muted">
-                      Nye bestillinger av bilvask vises her.
-                    </p>
+                    <p className="muted"> {t("Nye bestillinger av bilvask vises her.")} </p>
                   </div>
                 )}
               </>

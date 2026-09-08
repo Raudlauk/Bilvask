@@ -1,4 +1,5 @@
 'use client';
+import { useLanguage, LanguagePicker } from '@/components/language';
 import { useState, useEffect } from 'react';
 import { today, blocked, timeLabel, dateLabel } from '@/lib/schedule';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -10,49 +11,48 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 export default function Home() {
+ const {t,language}=useLanguage();
   const [inside, setInside] = useState(false),
     [outside, setOutside] = useState(true);
   return (
     <>
       <header>
+<div className="header-identity"><a href="https://ynvekst.no/" aria-label="Ytre Namdal Vekst"><img className="yn-logo" src="/yn-vekst-logo.svg" width="174" height="55" alt="Ytre Namdal Vekst" /></a>
         <a className="brand" href="/">
-          <Droplets /> Steam<span>BILVASK</span>
+          <Droplets /> Steam<span>{t("BILVASK")}</span>
         </a>
-        <a className="worker-link" href="/admin">
-          Ansattinnlogging <ArrowUpRight size={16} />
+        </div><div className="header-tools"><LanguagePicker /><a className="worker-link" href="/admin"> {t("Ansattinnlogging")} <ArrowUpRight size={16} />
         </a>
-      </header>
+      </div></header>
       <main>
         <div className="intro">
-          <div className="eyebrow">EN FRISK START FOR BILEN</div>
-          <h1>
-            En ren bil.
-            <br />
-            <span>Et tidspunkt som passer deg.</span>
+          <div className="eyebrow">{t("EN FRISK START FOR BILEN")}</div>
+          <h1> {t("En ren bil.")} <br />
+            <span>{t("Et tidspunkt som passer deg.")}</span>
           </h1>
-          <p>Velg vask og tidspunkt, så ordner vi resten.</p>
+          <p>{t("Velg vask og tidspunkt, så ordner vi resten.")}</p>
         </div>
         <div className="booking-layout">
           <section className="panel">
             <div className="section-title">
               <b>01</b>
-              <h2>Velg bilvask</h2>
-              <span>Velg én eller begge</span>
+              <h2>{t("Velg bilvask")}</h2>
+              <span>{t("Velg én eller begge")}</span>
             </div>
             <div className="services">
               {[
                 {
                   id: 'outside',
-                  name: 'Utvendig vask',
-                  detail: 'Skinnende ren, fra tak til dekk.',
+                  name: t("Utvendig vask"),
+                  detail: t("Skinnende ren, fra tak til dekk."),
                   icon: Droplets,
                   checked: outside,
                   set: setOutside,
                 },
                 {
                   id: 'inside',
-                  name: 'Innvendig vask',
-                  detail: 'En ren kupé for kjøreturen videre.',
+                  name: t("Innvendig vask"),
+                  detail: t("En ren kupé for kjøreturen videre."),
                   icon: Sparkles,
                   checked: inside,
                   set: setInside,
@@ -73,81 +73,62 @@ export default function Home() {
                   <h3>{s.name}</h3>
                   <p>{s.detail}</p>
                   <span>
-                    <Clock3 size={15} />
-                    30 minutter
-                  </span>
+                    <Clock3 size={15} /> {t("30 minutter")} </span>
                 </label>
               ))}
             </div>
             <div className="section-title">
               <b>02</b>
-              <h2>Velg dato og tidspunkt</h2>
+              <h2>{t("Velg dato og tidspunkt")}</h2>
             </div>
-            <p className="notice">
-              Mandager og torsdager er reservert. Du kan bestille bilvask alle
-              andre dager.
-            </p>
+            <p className="notice"> {t("Mandager og torsdager er reservert. Du kan bestille bilvask alle andre dager.")} </p>
             <Booking inside={inside} outside={outside} />
           </section>
           <aside>
             <div className="summary">
-              <div className="eyebrow">DIN NESTE BILVASK</div>
-              <h2>
-                Litt omtanke.
-                <br />
-                Stor forskjell.
-              </h2>
+              <div className="eyebrow">{t("DIN NESTE BILVASK")}</div>
+              <h2> {t("Litt omtanke.")} <br /> {t("Stor forskjell.")} </h2>
               <div className="summary-row">
-                <span>Valgt vask</span>
+                <span>{t("Valgt vask")}</span>
                 <strong>
                   {inside && outside
-                    ? 'Innvendig og utvendig'
+                    ? t("Innvendig og utvendig")
                     : inside
-                      ? 'Innvendig vask'
+                      ? t("Innvendig vask")
                       : outside
-                        ? 'Utvendig vask'
-                        : 'Velg vask'}
+                        ? t("Utvendig vask")
+                        : t("Velg vask")}
                 </strong>
               </div>
               <div className="summary-row">
-                <span>Samlet tid</span>
+                <span>{t("Samlet tid")}</span>
                 <strong>
-                  {30 * (Number(inside) + Number(outside))} minutter
-                </strong>
+                  {30 * (Number(inside) + Number(outside))} {t("minutter")} </strong>
               </div>
               <div className="summary-foot">
                 <ShieldCheck />
-                <p>
-                  Timen din blir reservert
-                  <br />
-                  så snart du bestiller.
-                </p>
+                <p> {t("Timen din blir reservert")} <br /> {t("så snart du bestiller.")} </p>
               </div>
             </div>
             <div className="hours">
               <Clock3 size={20} />
               <div>
-                <strong>Åpningstider</strong>
-                <p>
-                  08:00–15:00 · norsk tid
-                  <br />
-                  Siste starttid kl. 14:00
-                  <br />
-                  Mandag og torsdag er reservert
-                </p>
+                <strong>{t("Åpningstider")}</strong>
+                <p> {t("08:00–15:00 · norsk tid")} <br /> {t("Siste starttid kl. 14:00")} <br /> {t("Mandag og torsdag er reservert")} </p>
               </div>
             </div>
           </aside>
         </div>
       </main>
       <footer>
-        <span>Steam / BILVASK</span>
-        <span>En renere bil starter her.</span>
+        <span>{t("Steam / BILVASK")}</span>
+        <span>{t("En renere bil starter her.")}</span>
       </footer>
     </>
   );
 }
 function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
+ const {t,language}=useLanguage();
   const [month, setMonth] = useState(() => today().slice(0, 7)),
     [date, setDate] = useState(''),
     [start, setStart] = useState<number | null>(null),
@@ -224,7 +205,7 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
       }
       setConfirmation(b);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Prøv igjen.');
+      setError(e instanceof Error ? e.message : t("Prøv igjen."));
     } finally {
       setBusy(false);
     }
@@ -233,22 +214,19 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
     return (
       <div className="success" role="status">
         <ShieldCheck size={35} />
-        <h2>Timen er bestilt, {confirmation.name}.</h2>
+        <h2>{t("Timen er bestilt,")} {confirmation.name}.</h2>
         <p>
-          {dateLabel(confirmation.date)} · {timeLabel(confirmation.start)}–
+          {dateLabel(confirmation.date, language)} · {timeLabel(confirmation.start)}–
           {timeLabel(confirmation.start + confirmation.duration)}
         </p>
         <p>
           {confirmation.inside && confirmation.outside
-            ? 'Innvendig og utvendig vask'
+            ? t("Innvendig og utvendig vask")
             : confirmation.inside
-              ? 'Innvendig vask'
-              : 'Utvendig vask'}{' '}
-          · {confirmation.duration} minutter
-        </p>
-        <p className="muted">
-          Alle klokkeslett er i norsk tid. Ta vare på bestillingsdetaljene.
-        </p>
+              ? t("Innvendig vask")
+              : t("Utvendig vask")}{' '}
+          · {confirmation.duration} {t("minutter")} </p>
+        <p className="muted"> {t("Alle klokkeslett er i norsk tid. Ta vare på bestillingsdetaljene.")} </p>
         <button
           className="secondary"
           onClick={() => {
@@ -258,16 +236,14 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
             setStart(null);
             setRevision((r) => r + 1);
           }}
-        >
-          Bestill en ny vask
-        </button>
+        > {t("Bestill en ny vask")} </button>
       </div>
     );
   return (
     <form onSubmit={submit}>
       <div className="calendar-head">
         <strong>
-          {first.toLocaleDateString('nb-NO', {
+          {first.toLocaleDateString(language === 'nb' ? 'nb-NO' : 'en-GB', {
             month: 'long',
             year: 'numeric',
             timeZone: 'UTC',
@@ -276,7 +252,7 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
         <div>
           <button
             type="button"
-            aria-label="Forrige måned"
+            aria-label={t("Forrige måned")}
             disabled={month <= today().slice(0, 7)}
             onClick={() => move(-1)}
           >
@@ -284,7 +260,7 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
           </button>{' '}
           <button
             type="button"
-            aria-label="Neste måned"
+            aria-label={t("Neste måned")}
             onClick={() => move(1)}
           >
             ›
@@ -292,7 +268,7 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
         </div>
       </div>
       <div className="calendar">
-        {['Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør', 'Søn'].map((d) => (
+        {[t("Man"), t("Tir"), t("Ons"), t("Tor"), t("Fre"), t("Lør"), t("Søn")].map((d) => (
           <span key={d}>{d}</span>
         ))}
         {Array.from({ length: offset }, (_, i) => (
@@ -307,7 +283,7 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
               className={date === d ? 'active' : ''}
               disabled={d < today() || blocked(d)}
               aria-pressed={date === d}
-              aria-label={dateLabel(d) + (blocked(d) ? ', reservert' : '')}
+              aria-label={dateLabel(d, language) + (blocked(d) ? t(", reservert") : '')}
               onClick={() => setDate(d)}
             >
               {i + 1}
@@ -316,10 +292,10 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
         })}
       </div>
       <p className="muted">
-        {date ? dateLabel(date) : 'Velg en ledig dato ovenfor.'} · norsk tid
+        {date ? dateLabel(date, language) : t("Velg en ledig dato ovenfor.")} · {t('norsk tid')}
       </p>
       {loading ? (
-        <p role="status">Henter ledige tider…</p>
+        <p role="status">{t("Henter ledige tider…")}</p>
       ) : date && duration > 0 ? (
         <>
           <div className="slots">
@@ -336,39 +312,33 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
             ))}
           </div>
           {!slots.length && !error && (
-            <p className="notice">
-              Ingen ledige tider for denne vasken. Velg en annen dato.
-            </p>
+            <p className="notice"> {t("Ingen ledige tider for denne vasken. Velg en annen dato.")} </p>
           )}
         </>
       ) : null}
       {!duration && (
-        <p className="notice">Velg minst én vask for å se ledige tider.</p>
+        <p className="notice">{t("Velg minst én vask for å se ledige tider.")}</p>
       )}
       <div className="section-title">
         <b>03</b>
-        <h2>Dine opplysninger</h2>
+        <h2>{t("Dine opplysninger")}</h2>
       </div>
       <div className="form-grid">
-        <label>
-          Fullt navn
-          <input
+        <label> {t("Fullt navn")} <input
             required
             autoComplete="name"
             maxLength={100}
-            placeholder="Navnet ditt"
+            placeholder={t("Navnet ditt")}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
         </label>
-        <label>
-          Telefonnummer
-          <input
+        <label> {t("Telefonnummer")} <input
             required
             type="tel"
             autoComplete="tel"
             maxLength={30}
-            placeholder="Telefonnummeret ditt"
+            placeholder={t("Telefonnummeret ditt")}
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
@@ -376,14 +346,12 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
       </div>
       {error && (
         <div role="alert" className="error">
-          {error}{' '}
+          {t(error)}{' '}
           <button
             type="button"
             className="secondary"
             onClick={() => setRevision((r) => r + 1)}
-          >
-            Oppdater tider
-          </button>
+          > {t("Oppdater tider")} </button>
         </div>
       )}
       <button
@@ -391,13 +359,13 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
         disabled={busy || loading || start === null || !duration}
         type="submit"
       >
-        <span>{busy ? 'Bekrefter…' : 'Bekreft bestilling'}</span>
+        <span>{busy ? t("Bekrefter…") : t("Bekreft bestilling")}</span>
         <span>{duration} min →</span>
       </button>
       <p className="muted">
         {start === null
-          ? 'Velg et tidspunkt for å fullføre bestillingen.'
-          : `${dateLabel(date)} · ${timeLabel(start)}–${timeLabel(start + duration)}`}
+          ? t("Velg et tidspunkt for å fullføre bestillingen.")
+          : `${dateLabel(date, language)} · ${timeLabel(start)}–${timeLabel(start + duration)}`}
       </p>
     </form>
   );

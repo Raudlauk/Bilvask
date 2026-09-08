@@ -34,8 +34,8 @@ export function timeLabel(minutes: number) {
     .toString()
     .padStart(2, '0')}:${(minutes % 60).toString().padStart(2, '0')}`;
 }
-export function dateLabel(date: string) {
-  return new Date(date + 'T12:00:00Z').toLocaleDateString('nb-NO', {
+export function dateLabel(date: string, language: 'nb' | 'en' = 'nb') {
+  return new Date(date + 'T12:00:00Z').toLocaleDateString(language === 'nb' ? 'nb-NO' : 'en-GB', {
     weekday: 'short',
     day: 'numeric',
     month: 'short',

@@ -1,6 +1,6 @@
 'use client';
-import {VippsSection} from '@/components/vipps';
 import { ContactSection } from '@/components/contact';
+import { LocationSection } from '@/components/location';
 import {emptyPrices,washTotal,money,type Prices} from '@/lib/prices';
 import { useLanguage, LanguagePicker } from '@/components/language';
 import { useState, useEffect } from 'react';
@@ -132,8 +132,8 @@ export default function Home() {
             </div>
           </aside>
         </div>
-        <VippsSection />
         <ContactSection />
+        <LocationSection />
       </main>
       <footer>
         <span>{t("Steam / BILVASK")}</span>

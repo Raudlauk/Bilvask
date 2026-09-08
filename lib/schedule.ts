@@ -35,7 +35,7 @@ export function timeLabel(minutes: number) {
     .padStart(2, '0')}:${(minutes % 60).toString().padStart(2, '0')}`;
 }
 export function dateLabel(date: string) {
-  return new Date(date + 'T12:00:00Z').toLocaleDateString('en-GB', {
+  return new Date(date + 'T12:00:00Z').toLocaleDateString('nb-NO', {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -55,9 +55,10 @@ export function available(
     ![30, 60].includes(duration)
   )
     return [];
-  return Array.from({ length: 16 }, (_, i) => 540 + i * 30).filter(
+  return Array.from({ length: 13 }, (_, i) => 480 + i * 30).filter(
     (start) =>
-      start + duration <= 1020 &&
+      start <= 840 &&
+      start + duration <= 900 &&
       (date !== today() || start > currentMinutes()) &&
       !busy.some(
         (b) => start < b.start + b.duration && start + duration > b.start,

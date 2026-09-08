@@ -16,43 +16,43 @@ export default function Home() {
     <>
       <header>
         <a className="brand" href="/">
-          <Droplets /> gleam<span>CAR WASH</span>
+          <Droplets /> Steam<span>BILVASK</span>
         </a>
         <a className="worker-link" href="/admin">
-          Worker login <ArrowUpRight size={16} />
+          Ansattinnlogging <ArrowUpRight size={16} />
         </a>
       </header>
       <main>
         <div className="intro">
-          <div className="eyebrow">A FRESH START FOR YOUR CAR</div>
+          <div className="eyebrow">EN FRISK START FOR BILEN</div>
           <h1>
-            A clean car.
+            En ren bil.
             <br />
-            <span>A time that suits you.</span>
+            <span>Et tidspunkt som passer deg.</span>
           </h1>
-          <p>Choose your wash, pick a time, and we’ll take care of the rest.</p>
+          <p>Velg vask og tidspunkt, så ordner vi resten.</p>
         </div>
         <div className="booking-layout">
           <section className="panel">
             <div className="section-title">
               <b>01</b>
-              <h2>Choose your wash</h2>
-              <span>Select one or both</span>
+              <h2>Velg bilvask</h2>
+              <span>Velg én eller begge</span>
             </div>
             <div className="services">
               {[
                 {
                   id: 'outside',
-                  name: 'Outside wash',
-                  detail: 'A fresh finish, from top to tyres.',
+                  name: 'Utvendig vask',
+                  detail: 'Skinnende ren, fra tak til dekk.',
                   icon: Droplets,
                   checked: outside,
                   set: setOutside,
                 },
                 {
                   id: 'inside',
-                  name: 'Inside wash',
-                  detail: 'A clean cabin for the road ahead.',
+                  name: 'Innvendig vask',
+                  detail: 'En ren kupé for kjøreturen videre.',
                   icon: Sparkles,
                   checked: inside,
                   set: setInside,
@@ -74,63 +74,66 @@ export default function Home() {
                   <p>{s.detail}</p>
                   <span>
                     <Clock3 size={15} />
-                    30 minutes
+                    30 minutter
                   </span>
                 </label>
               ))}
             </div>
             <div className="section-title">
               <b>02</b>
-              <h2>Pick a date & time</h2>
+              <h2>Velg dato og tidspunkt</h2>
             </div>
             <p className="notice">
-              Mondays and Thursdays are reserved. Public bookings are available
-              on all other days.
+              Mandager og torsdager er reservert. Du kan bestille bilvask alle
+              andre dager.
             </p>
             <Booking inside={inside} outside={outside} />
           </section>
           <aside>
             <div className="summary">
-              <div className="eyebrow">YOUR NEXT CLEAN</div>
+              <div className="eyebrow">DIN NESTE BILVASK</div>
               <h2>
-                A little care.
-                <br />A big difference.
+                Litt omtanke.
+                <br />
+                Stor forskjell.
               </h2>
               <div className="summary-row">
-                <span>Selected wash</span>
+                <span>Valgt vask</span>
                 <strong>
                   {inside && outside
-                    ? 'Inside + outside'
+                    ? 'Innvendig og utvendig'
                     : inside
-                      ? 'Inside wash'
+                      ? 'Innvendig vask'
                       : outside
-                        ? 'Outside wash'
-                        : 'Choose a wash'}
+                        ? 'Utvendig vask'
+                        : 'Velg vask'}
                 </strong>
               </div>
               <div className="summary-row">
-                <span>Total time</span>
+                <span>Samlet tid</span>
                 <strong>
-                  {30 * (Number(inside) + Number(outside))} minutes
+                  {30 * (Number(inside) + Number(outside))} minutter
                 </strong>
               </div>
               <div className="summary-foot">
                 <ShieldCheck />
                 <p>
-                  Your time is reserved
+                  Timen din blir reservert
                   <br />
-                  as soon as you book.
+                  så snart du bestiller.
                 </p>
               </div>
             </div>
             <div className="hours">
               <Clock3 size={20} />
               <div>
-                <strong>Wash hours</strong>
+                <strong>Åpningstider</strong>
                 <p>
-                  09:00–17:00 · Europe/Oslo
+                  08:00–15:00 · norsk tid
                   <br />
-                  Monday & Thursday reserved
+                  Siste starttid kl. 14:00
+                  <br />
+                  Mandag og torsdag er reservert
                 </p>
               </div>
             </div>
@@ -138,8 +141,8 @@ export default function Home() {
         </div>
       </main>
       <footer>
-        <span>gleam / CAR WASH</span>
-        <span>A cleaner car starts here.</span>
+        <span>Steam / BILVASK</span>
+        <span>En renere bil starter her.</span>
       </footer>
     </>
   );
@@ -221,7 +224,7 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
       }
       setConfirmation(b);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Please try again.');
+      setError(e instanceof Error ? e.message : 'Prøv igjen.');
     } finally {
       setBusy(false);
     }
@@ -230,21 +233,21 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
     return (
       <div className="success" role="status">
         <ShieldCheck size={35} />
-        <h2>You’re booked, {confirmation.name}.</h2>
+        <h2>Timen er bestilt, {confirmation.name}.</h2>
         <p>
           {dateLabel(confirmation.date)} · {timeLabel(confirmation.start)}–
           {timeLabel(confirmation.start + confirmation.duration)}
         </p>
         <p>
           {confirmation.inside && confirmation.outside
-            ? 'Inside + outside wash'
+            ? 'Innvendig og utvendig vask'
             : confirmation.inside
-              ? 'Inside wash'
-              : 'Outside wash'}{' '}
-          · {confirmation.duration} minutes
+              ? 'Innvendig vask'
+              : 'Utvendig vask'}{' '}
+          · {confirmation.duration} minutter
         </p>
         <p className="muted">
-          All times are Europe/Oslo. Please save these details.
+          Alle klokkeslett er i norsk tid. Ta vare på bestillingsdetaljene.
         </p>
         <button
           className="secondary"
@@ -256,7 +259,7 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
             setRevision((r) => r + 1);
           }}
         >
-          Book another wash
+          Bestill en ny vask
         </button>
       </div>
     );
@@ -264,7 +267,7 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
     <form onSubmit={submit}>
       <div className="calendar-head">
         <strong>
-          {first.toLocaleDateString('en-GB', {
+          {first.toLocaleDateString('nb-NO', {
             month: 'long',
             year: 'numeric',
             timeZone: 'UTC',
@@ -273,19 +276,23 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
         <div>
           <button
             type="button"
-            aria-label="Previous month"
+            aria-label="Forrige måned"
             disabled={month <= today().slice(0, 7)}
             onClick={() => move(-1)}
           >
             ‹
           </button>{' '}
-          <button type="button" aria-label="Next month" onClick={() => move(1)}>
+          <button
+            type="button"
+            aria-label="Neste måned"
+            onClick={() => move(1)}
+          >
             ›
           </button>
         </div>
       </div>
       <div className="calendar">
-        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
+        {['Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør', 'Søn'].map((d) => (
           <span key={d}>{d}</span>
         ))}
         {Array.from({ length: offset }, (_, i) => (
@@ -300,7 +307,7 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
               className={date === d ? 'active' : ''}
               disabled={d < today() || blocked(d)}
               aria-pressed={date === d}
-              aria-label={dateLabel(d) + (blocked(d) ? ', reserved' : '')}
+              aria-label={dateLabel(d) + (blocked(d) ? ', reservert' : '')}
               onClick={() => setDate(d)}
             >
               {i + 1}
@@ -309,11 +316,10 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
         })}
       </div>
       <p className="muted">
-        {date ? dateLabel(date) : 'Select an available date above.'} ·
-        Europe/Oslo
+        {date ? dateLabel(date) : 'Velg en ledig dato ovenfor.'} · norsk tid
       </p>
       {loading ? (
-        <p role="status">Checking available times…</p>
+        <p role="status">Henter ledige tider…</p>
       ) : date && duration > 0 ? (
         <>
           <div className="slots">
@@ -331,40 +337,38 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
           </div>
           {!slots.length && !error && (
             <p className="notice">
-              No times available for this wash. Please choose another date.
+              Ingen ledige tider for denne vasken. Velg en annen dato.
             </p>
           )}
         </>
       ) : null}
       {!duration && (
-        <p className="notice">
-          Select at least one wash to see available times.
-        </p>
+        <p className="notice">Velg minst én vask for å se ledige tider.</p>
       )}
       <div className="section-title">
         <b>03</b>
-        <h2>Your details</h2>
+        <h2>Dine opplysninger</h2>
       </div>
       <div className="form-grid">
         <label>
-          Full name
+          Fullt navn
           <input
             required
             autoComplete="name"
             maxLength={100}
-            placeholder="Your name"
+            placeholder="Navnet ditt"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
         </label>
         <label>
-          Phone number
+          Telefonnummer
           <input
             required
             type="tel"
             autoComplete="tel"
             maxLength={30}
-            placeholder="Your phone number"
+            placeholder="Telefonnummeret ditt"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
@@ -378,7 +382,7 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
             className="secondary"
             onClick={() => setRevision((r) => r + 1)}
           >
-            Refresh times
+            Oppdater tider
           </button>
         </div>
       )}
@@ -387,12 +391,12 @@ function Booking({ inside, outside }: { inside: boolean; outside: boolean }) {
         disabled={busy || loading || start === null || !duration}
         type="submit"
       >
-        <span>{busy ? 'Confirming…' : 'Confirm booking'}</span>
+        <span>{busy ? 'Bekrefter…' : 'Bekreft bestilling'}</span>
         <span>{duration} min →</span>
       </button>
       <p className="muted">
         {start === null
-          ? 'Select a time to complete your booking.'
+          ? 'Velg et tidspunkt for å fullføre bestillingen.'
           : `${dateLabel(date)} · ${timeLabel(start)}–${timeLabel(start + duration)}`}
       </p>
     </form>

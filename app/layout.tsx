@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Gleam — Book your car wash',
-  description: 'Book an inside wash, outside wash, or both. Choose your date and time.',
+  title: 'Steam — Bestill bilvask',
+  description:
+    'Bestill innvendig vask, utvendig vask eller begge deler. Åpent 08:00–15:00. Siste starttid er kl. 14:00.',
 };
 
 export default function RootLayout({
@@ -23,7 +24,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="nb">
+      <head>
+        <meta charSet="utf-8" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

@@ -1,7 +1,7 @@
 import { db, json, sameOrigin, throttle } from '@/lib/server';
 import { available, validDate } from '@/lib/schedule';
 export async function POST(req: Request) {
-  if (!sameOrigin(req)) return json({ error: 'Invalid request.' }, 403);
+  if (!sameOrigin(req)) return json({ error: 'Ugyldig forespørsel.' }, 403);
   try {
     const b = (await req.json()) as Record<string, unknown>;
     const name = typeof b.name === 'string' ? b.name.trim() : '',
@@ -23,14 +23,13 @@ export async function POST(req: Request) {
     )
       return json(
         {
-          error:
-            'Enter your name, a valid phone number, and an available time.',
+          error: 'Oppgi navn, et gyldig telefonnummer og et ledig tidspunkt.',
         },
         400,
       );
     if (await throttle(req, 'booking', 30))
       return json(
-        { error: 'Too many booking requests. Please try again in 15 minutes.' },
+        { error: 'For mange bestillingsforsøk. Prøv igjen om 15 minutter.' },
         429,
       );
     const id = crypto.randomUUID();
@@ -55,13 +54,13 @@ export async function POST(req: Request) {
       .run();
     if (!result.meta.changes)
       return json(
-        { error: 'That time was just booked. Please choose another time.' },
+        { error: 'Denne timen ble nettopp bestilt. Velg et annet tidspunkt.' },
         409,
       );
     return json({ id, name, date, start, duration, inside, outside }, 201);
   } catch {
     return json(
-      { error: 'Your booking could not be confirmed. Please try again.' },
+      { error: 'Kunne ikke bekrefte bestillingen. Prøv igjen.' },
       503,
     );
   }

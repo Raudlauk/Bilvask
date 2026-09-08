@@ -45,7 +45,9 @@ export default function Admin() {
       setUsername(b.username);
       setJobs(b.bookings);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not load schedule.');
+      setError(
+        e instanceof Error ? e.message : 'Kunne ikke laste arbeidslisten.',
+      );
     } finally {
       setChecking(false);
     }
@@ -71,7 +73,7 @@ export default function Admin() {
       if (!r.ok) throw new Error(b.error);
       return true;
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Please try again.');
+      setError(e instanceof Error ? e.message : 'Prøv igjen.');
       return false;
     } finally {
       setBusy(false);
@@ -87,7 +89,7 @@ export default function Admin() {
   async function save(e: React.FormEvent) {
     e.preventDefault();
     if (newPassword !== confirm) {
-      setError('New passwords do not match.');
+      setError('De nye passordene er ikke like.');
       return;
     }
     if (
@@ -102,28 +104,30 @@ export default function Admin() {
       setCurrent('');
       setNewPassword('');
       setConfirm('');
-      setMessage('Login updated. Sign in with your new credentials.');
+      setMessage(
+        'Innloggingen er oppdatert. Logg inn med det nye brukernavnet og passordet.',
+      );
     }
   }
   return (
     <>
       <header>
         <a className="brand" href="/">
-          <Droplets /> gleam<span>WORKER SPACE</span>
+          <Droplets /> Steam<span>ANSATTSIDE</span>
         </a>
         <a href="/" className="worker-link">
           <ArrowLeft size={16} />
-          Back to booking
+          Tilbake til bestilling
         </a>
       </header>
       <main className="admin-wrap">
         {checking && !logged ? (
-          <p role="status">Loading worker space…</p>
+          <p role="status">Laster ansattsiden…</p>
         ) : !logged ? (
           <section className="panel login">
-            <div className="eyebrow">WORKER SPACE</div>
-            <h1>Welcome back.</h1>
-            <p className="muted">Sign in to see your booked washes.</p>
+            <div className="eyebrow">ANSATTSIDE</div>
+            <h1>Velkommen tilbake.</h1>
+            <p className="muted">Logg inn for å se bestilte bilvasker.</p>
             {message && (
               <p className="success" role="status">
                 {message}
@@ -131,7 +135,7 @@ export default function Admin() {
             )}
             <form onSubmit={login}>
               <label>
-                Username
+                Brukernavn
                 <input
                   autoComplete="username"
                   required
@@ -141,7 +145,7 @@ export default function Admin() {
                 />
               </label>
               <label>
-                Password
+                Passord
                 <input
                   type="password"
                   autoComplete="current-password"
@@ -157,7 +161,7 @@ export default function Admin() {
               )}
               <button className="primary" disabled={busy}>
                 {' '}
-                {busy ? 'Signing in…' : 'Sign in →'}
+                {busy ? 'Logger inn…' : 'Logg inn →'}
               </button>
             </form>
           </section>
@@ -165,12 +169,14 @@ export default function Admin() {
           <>
             <div className="admin-top">
               <div>
-                <div className="eyebrow">WORKER SPACE</div>
-                <h1>{settings ? 'Login settings' : 'The wash schedule'}</h1>
+                <div className="eyebrow">ANSATTSIDE</div>
+                <h1>
+                  {settings ? 'Innloggingsinnstillinger' : 'Arbeidsliste'}
+                </h1>
                 <p className="muted">
                   {settings
-                    ? 'Update the shared worker login.'
-                    : 'Booked work, in time order. All times are Europe/Oslo.'}
+                    ? 'Endre den felles innloggingen for ansatte.'
+                    : 'Bestilte bilvasker i tidsrekkefølge. Alle klokkeslett er i norsk tid.'}
                 </p>
               </div>
               <div className="admin-actions">
@@ -181,7 +187,9 @@ export default function Admin() {
                     setError('');
                   }}
                 >
-                  {settings ? 'Back to schedule' : 'Login settings'}
+                  {settings
+                    ? 'Tilbake til arbeidslisten'
+                    : 'Innloggingsinnstillinger'}
                 </button>
                 <button
                   className="secondary"
@@ -193,7 +201,7 @@ export default function Admin() {
                     }
                   }}
                 >
-                  Sign out
+                  Logg ut
                 </button>
               </div>
             </div>
@@ -204,9 +212,9 @@ export default function Admin() {
             )}
             {settings ? (
               <form className="panel settings" onSubmit={save}>
-                <h2>Change login</h2>
+                <h2>Endre innlogging</h2>
                 <label>
-                  Username
+                  Brukernavn
                   <input
                     required
                     maxLength={50}
@@ -216,7 +224,7 @@ export default function Admin() {
                   />
                 </label>
                 <label>
-                  Current password
+                  Nåværende passord
                   <input
                     required
                     type="password"
@@ -226,7 +234,7 @@ export default function Admin() {
                   />
                 </label>
                 <label>
-                  New password
+                  Nytt passord
                   <input
                     required
                     minLength={8}
@@ -238,7 +246,7 @@ export default function Admin() {
                   />
                 </label>
                 <label>
-                  Confirm new password
+                  Bekreft nytt passord
                   <input
                     required
                     minLength={8}
@@ -249,11 +257,11 @@ export default function Admin() {
                   />
                 </label>
                 <p className="muted">
-                  Use at least 8 characters. Updating the login signs out all
-                  workers.
+                  Bruk minst 8 tegn. Alle ansatte blir logget ut når
+                  innloggingen endres.
                 </p>
                 <button className="primary" disabled={busy}>
-                  {busy ? 'Saving…' : 'Save login'}
+                  {busy ? 'Lagrer…' : 'Lagre innlogging'}
                 </button>
               </form>
             ) : (
@@ -267,9 +275,9 @@ export default function Admin() {
                   }}
                 >
                   <label>
-                    Show date{' '}
+                    Vis dato{' '}
                     <input
-                      aria-label="Schedule date"
+                      aria-label="Dato for arbeidslisten"
                       type="date"
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
@@ -280,26 +288,26 @@ export default function Admin() {
                     className="secondary"
                     onClick={() => setDate(today())}
                   >
-                    Today
+                    I dag
                   </button>
                   <button className="secondary" onClick={() => setDate('')}>
-                    All upcoming
+                    Alle kommende
                   </button>
                   <button
                     className="secondary"
                     onClick={load}
-                    aria-label="Refresh schedule"
+                    aria-label="Oppdater arbeidslisten"
                   >
                     <RefreshCw size={18} />
                   </button>
                 </div>
                 <p className="muted">
-                  {date ? dateLabel(date) : 'Upcoming bookings'} · {jobs.length}{' '}
-                  {jobs.length === 1 ? 'wash' : 'washes'} ·{' '}
-                  {jobs.reduce((n, j) => n + j.duration, 0)} minutes
+                  {date ? dateLabel(date) : 'Kommende bestillinger'} ·{' '}
+                  {jobs.length} {jobs.length === 1 ? 'bilvask' : 'bilvasker'} ·{' '}
+                  {jobs.reduce((n, j) => n + j.duration, 0)} minutter
                 </p>
                 {checking ? (
-                  <p role="status">Updating schedule…</p>
+                  <p role="status">Oppdaterer arbeidslisten…</p>
                 ) : jobs.length ? (
                   <div className="jobs">
                     {jobs.map((j) => (
@@ -312,11 +320,11 @@ export default function Admin() {
                           <h3>{j.name}</h3>
                           <p>
                             {j.inside && j.outside
-                              ? 'Inside + outside wash'
+                              ? 'Innvendig og utvendig vask'
                               : j.inside
-                                ? 'Inside wash'
-                                : 'Outside wash'}{' '}
-                            · {j.duration} minutes
+                                ? 'Innvendig vask'
+                                : 'Utvendig vask'}{' '}
+                            · {j.duration} minutter
                           </p>
                         </div>
                         <a href={'tel:' + j.phone.replace(/[^+\d]/g, '')}>
@@ -328,9 +336,11 @@ export default function Admin() {
                 ) : (
                   <div className="panel">
                     <CalendarDays size={32} />
-                    <h2>No bookings {date ? 'on this date' : 'yet'}.</h2>
+                    <h2>
+                      Ingen bestillinger {date ? 'på denne datoen' : 'ennå'}.
+                    </h2>
                     <p className="muted">
-                      New car wash bookings will appear here.
+                      Nye bestillinger av bilvask vises her.
                     </p>
                   </div>
                 )}

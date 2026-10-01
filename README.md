@@ -375,6 +375,16 @@ Booking data contains customer names and phone numbers and should be treated as 
 
 The project is configured for a Cloudflare-compatible Vinext deployment and uses `.openai/hosting.json` to declare the D1 binding.
 
+For your own Cloudflare Workers account, create a D1 database and set
+`CLOUDFLARE_D1_DATABASE_ID` and `CLOUDFLARE_D1_DATABASE_NAME` in the Worker's
+**build environment variables** to override the configured production database.
+These identifiers are not secrets. Production builds default to the project's
+Cloudflare database; development uses the local preview placeholder.
+Use `npm run build` as the build command and
+`npx wrangler deploy --config dist/server/wrangler.json` as the deploy command.
+Initialize a fresh database with the SQL migrations in `drizzle/` before using
+booking or admin features; deployment alone does not create the application tables.
+
 Before production deployment, verify:
 
 1. The target D1 database has the expected schema/migrations.

@@ -6,21 +6,23 @@ import hostingConfig from './.openai/hosting.json';
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
   '00000000-0000-4000-8000-000000000000';
+const PRODUCTION_DATABASE_ID = 'b5384c4d-fd9a-417f-816b-a3a9a8ea4256';
 
 const { d1, r2 } = hostingConfig;
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === 'seatbelt';
 
-const localBindingConfig = {
+const bindingConfig = (isBuild: boolean) => ({
   main: 'vinext/server/fetch-handler',
   compatibility_flags: ['nodejs_compat'],
   d1_databases: d1
     ? [
         {
           binding: d1,
-          database_name: 'site-creator-d1',
-          database_id: SITE_CREATOR_PLACEHOLDER_DATABASE_ID,
+          database_name: process.env.CLOUDFLARE_D1_DATABASE_NAME || 'site-creator-d1',
+          database_id: process.env.CLOUDFLARE_D1_DATABASE_ID ||
+            (isBuild ? PRODUCTION_DATABASE_ID : SITE_CREATOR_PLACEHOLDER_DATABASE_ID),
         },
       ]
     : [],
@@ -32,7 +34,7 @@ const localBindingConfig = {
         },
       ]
     : [],
-};
+});
 
 export default defineConfig(async ({command, mode}) => {
   const localEnv = loadEnv(mode, process.cwd(), 'BOOKING_');
@@ -55,7 +57,7 @@ export default defineConfig(async ({command, mode}) => {
       sites(),
       cloudflare({
         viteEnvironment: { name: 'rsc', childEnvironments: ['ssr'] },
-        config: {...localBindingConfig, vars: command === 'serve' && localEnv.BOOKING_PUBLIC_ORIGIN
+        config: {...bindingConfig(command === 'build'), vars: command === 'serve' && localEnv.BOOKING_PUBLIC_ORIGIN
           ? Object.fromEntries(['BOOKING_PUBLIC_ORIGIN','BOOKING_RESEND_API_KEY','BOOKING_EMAIL_FROM'].filter(key=>localEnv[key]).map(key=>[key,localEnv[key]])) : {}},
       }),
     ],

@@ -1,0 +1,1 @@
+ALTER TABLE `prices` ADD `fluid` integer;

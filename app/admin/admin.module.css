@@ -1,0 +1,208 @@
+.page {
+  --primary: #143f49;
+  --text-muted: #526f74;
+  --border-default: #cddcda;
+  --action: #d5e878;
+  --action-hover: #c4da60;
+  --action-text: #143f49;
+  min-height: 100dvh;
+  background: #edf2ef;
+  color: #143f49;
+}
+
+.page :global(.admin-wrap) {
+  max-width: 1180px;
+  padding-top: 48px;
+}
+
+.page :global(.admin-top) {
+  padding-bottom: 24px;
+  border-bottom: 1px solid #cddcda;
+}
+
+.page :global(.admin-top h1) {
+  font-size: clamp(30px, 3vw, 42px);
+  letter-spacing: -1.3px;
+  margin-top: 10px;
+}
+
+.page :global(.eyebrow) {
+  color: #557177;
+  font-size: 11px;
+  letter-spacing: 1.7px;
+}
+
+.page :global(.panel),
+.page :global(.job.job-card) {
+  background: #fafcf9;
+  border-color: #cddcda;
+  box-shadow: none;
+}
+
+.page :global(.login) {
+  max-width: 480px;
+  padding: 36px;
+  margin: 28px auto 48px;
+  border-top: 4px solid #143f49;
+}
+
+.page :global(.login h1) {
+  font-size: 36px;
+  line-height: 1.15;
+  letter-spacing: -1px;
+  margin: 14px 0;
+}
+
+.page :global(.admin-tabs [data-slot='tabs-list']) {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid #cddcda;
+  border-radius: 0;
+  padding: 0 0 12px;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.page :global(.admin-tabs [data-slot='tabs-trigger']) {
+  padding-inline: 18px;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.page :global(.admin-tabs [data-slot='tabs-trigger'][data-active]) {
+  background: #143f49;
+  color: #fafcf9;
+  border-color: #143f49;
+  box-shadow: none;
+}
+
+.page :global(.schedule-filters) {
+  padding: 20px;
+  background: #fafcf9;
+  border: 1px solid #cddcda;
+  border-radius: 12px;
+  align-items: flex-end;
+}
+
+.page :global(.secondary),
+.dialog :global(.secondary) {
+  background: #fafcf9;
+  color: #143f49;
+  border-color: #bdcfcc;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.page :global(.secondary:hover:not(:disabled)),
+.dialog :global(.secondary:hover:not(:disabled)) {
+  background: #e4ede7;
+  border-color: #8daaa4;
+}
+
+.page :global(.schedule-filters button[aria-pressed='true']) {
+  background: #e5edce;
+  border-color: #809d51;
+}
+
+.page :global(.schedule-summary) {
+  padding-block: 22px 16px;
+}
+
+.page :global(.job.job-card) {
+  border-radius: 12px;
+  border-left: 4px solid #74938c;
+}
+
+.page :global(.job-time) {
+  color: #143f49;
+  font-variant-numeric: tabular-nums;
+}
+
+.page :global(.job h3) {
+  font-size: 20px;
+  letter-spacing: -0.3px;
+}
+
+.page :global(.job p) {
+  color: #526f74;
+  line-height: 1.6;
+}
+
+.page :global(.job-booking-code code) {
+  color: #143f49;
+}
+
+.page :global(.primary),
+.dialog :global(.primary) {
+  background: #d5e878;
+  color: #143f49;
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.page :global(.primary:hover:not(:disabled)),
+.dialog :global(.primary:hover:not(:disabled)) {
+  background: #c4da60;
+}
+
+.page :global(input:not([type='checkbox'])),
+.page :global(select),
+.page :global(textarea),
+.dialog :global(input) {
+  background: #fff;
+  border-color: #bdcfcc;
+  color: #143f49;
+}
+
+.page :global(.admin-tabs h2) {
+  font-size: 20px;
+  letter-spacing: -0.3px;
+}
+
+.page :global(.cancel-booking) {
+  color: #994339;
+}
+
+.dialog {
+  background: #fafcf9;
+  border-color: #bdcfcc;
+  color: #143f49;
+  border-radius: 16px;
+}
+
+.dialog :global(.muted) {
+  color: #526f74;
+}
+
+@media (max-width: 720px) {
+  .page :global(.admin-wrap) {
+    padding-top: 28px;
+  }
+
+  .page :global(.login) {
+    padding: 24px;
+    margin-top: 12px;
+  }
+
+  .page :global(.login h1) {
+    font-size: 30px;
+  }
+
+  .page :global(.admin-tabs [data-slot='tabs-list']) {
+    gap: 4px;
+  }
+
+  .page :global(.admin-tabs [data-slot='tabs-trigger']) {
+    padding-inline: 10px;
+  }
+
+  .page :global(.schedule-filters) {
+    padding: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page :global(.secondary),
+  .page :global(.admin-tabs [data-slot='tabs-trigger']),
+  .dialog :global(.secondary) {
+    transition: none;
+  }
+}

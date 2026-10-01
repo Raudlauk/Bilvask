@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import './site-design.css';
 import { LanguageProvider } from '@/components/language';
 
 export const metadata: Metadata = {

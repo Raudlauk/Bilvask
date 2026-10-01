@@ -1,0 +1,13 @@
+@font-face{font-family:Supreme;src:url('/fonts/supreme/Supreme-Regular.otf') format('opentype');font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:Supreme;src:url('/fonts/supreme/Supreme-Medium.otf') format('opentype');font-style:normal;font-weight:500;font-display:swap}
+@font-face{font-family:Supreme;src:url('/fonts/supreme/Supreme-Bold.otf') format('opentype');font-style:normal;font-weight:600 700;font-display:swap}
+@font-face{font-family:Supreme;src:url('/fonts/supreme/Supreme-Extrabold.otf') format('opentype');font-style:normal;font-weight:800 900;font-display:swap}
+:root{--site-teal:#103c47;--site-ink:#163d46;--site-paper:#f6f8f5;--site-line:#cddbd8;--site-lime:#d4e775}
+body{font-family:Supreme,Arial,sans-serif}
+button,input,select,textarea{font-family:inherit}
+header{max-width:none;margin:0;height:88px;padding:16px 4vw;border:0;background:var(--site-paper);gap:24px;color:var(--site-ink)}
+.brand{font-size:34px;font-weight:800;letter-spacing:-1.2px}
+.yn-logo{width:150px}
+.header-navigation .status-link{background:#e3ece7;color:var(--site-ink)}
+input::placeholder,textarea::placeholder{color:#526d6f;opacity:1}
+@media(max-width:720px){header{height:auto;min-height:0;padding:20px;gap:18px}}

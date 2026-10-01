@@ -56,7 +56,7 @@ export default defineConfig(async ({command, mode}) => {
       cloudflare({
         viteEnvironment: { name: 'rsc', childEnvironments: ['ssr'] },
         config: {...localBindingConfig, vars: command === 'serve' && localEnv.BOOKING_PUBLIC_ORIGIN
-          ? {BOOKING_PUBLIC_ORIGIN: localEnv.BOOKING_PUBLIC_ORIGIN} : {}},
+          ? Object.fromEntries(['BOOKING_PUBLIC_ORIGIN','BOOKING_RESEND_API_KEY','BOOKING_EMAIL_FROM'].filter(key=>localEnv[key]).map(key=>[key,localEnv[key]])) : {}},
       }),
     ],
   };

@@ -1,0 +1,1 @@
+ALTER TABLE `bookings` ADD `large_car` integer DEFAULT 0 NOT NULL;

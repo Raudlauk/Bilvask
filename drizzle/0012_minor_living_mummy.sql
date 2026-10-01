@@ -1,0 +1,1 @@
+ALTER TABLE `booking_settings` ADD `maps_url` text DEFAULT 'https://maps.app.goo.gl/eLbrjaFsUCS2t9VNA' NOT NULL;

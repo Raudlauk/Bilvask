@@ -1,4 +1,9 @@
 export const ZONE = 'Europe/Oslo';
+export function bookingDeadline(weeksAhead: number, from = today()) {
+  const date = new Date(from + 'T12:00:00Z');
+  date.setUTCDate(date.getUTCDate() + weeksAhead * 7);
+  return date.toISOString().slice(0, 10);
+}
 export function today() {
   return new Intl.DateTimeFormat('sv-SE', {
     timeZone: ZONE,
@@ -18,9 +23,9 @@ export function currentMinutes() {
     .split(':');
   return Number(parts[0]) * 60 + Number(parts[1]);
 }
-export function blocked(date: string) {
+export function blocked(date: string, weekdays = 44) {
   const day = new Date(date + 'T12:00:00Z').getUTCDay();
-  return day === 0 || day === 1 || day === 4 || day === 6;
+  return !(weekdays & (1 << day));
 }
 export function validDate(date: string) {
   return (
@@ -47,18 +52,19 @@ export function available(
   date: string,
   duration: number,
   busy: { start: number; duration: number }[],
+  weekdays = 44,
 ) {
   if (
     !validDate(date) ||
     date < today() ||
-    blocked(date) ||
-    ![30, 60].includes(duration)
+    blocked(date, weekdays) ||
+    (!Number.isInteger(duration) || duration < 15 || duration > 480 || duration % 15 !== 0)
   )
     return [];
   if (busy.length >= 4) return [];
   const morningCount = busy.filter(b => b.start < 720).length;
   const afternoonCount = busy.filter(b => b.start >= 720).length;
-  return Array.from({ length: 13 }, (_, i) => 480 + i * 30).filter(
+  return Array.from({ length: 25 }, (_, i) => 480 + i * 15).filter(
     (start) =>
       start <= 840 &&
       start + duration <= 900 &&
@@ -70,3 +76,5 @@ export function available(
       ),
   );
 }
+
+export function washDuration(settings:{insideMinutes:number;outsideMinutes:number;polishMinutes?:number},inside:boolean,outside:boolean,largeCar=false,polish=false){return (inside?settings.insideMinutes+(largeCar?15:0):0)+(outside?settings.outsideMinutes+(largeCar?15:0):0)+(polish?(settings.polishMinutes??60):0)}

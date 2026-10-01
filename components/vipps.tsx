@@ -7,5 +7,5 @@ export function VippsSection(){
  useEffect(()=>{const controller=new AbortController();fetch('/api/contact',{signal:controller.signal}).then(async response=>{if(!response.ok)throw new Error();const data=await response.json() as {vipps?:string};setNumber(data.vipps||'')}).catch(()=>{if(!controller.signal.aborted)setFailed(true)});return()=>controller.abort()},[]);
  if(failed)return <p className="muted">{t('Vipps-nummeret er ikke tilgjengelig akkurat nå.')}</p>;
  if(!number)return null;
- return <section className={styles.payment}><div><h2>{t('Betal med Vipps')}</h2><p>{t('Send betalingen til dette nummeret i Vipps-appen.')}</p></div><div><span>{t('Vipps-nummer')}</span><strong>{number}</strong></div></section>;
+ return <section className={styles.payment}><div><h2>{t('Betal med Vipps')}</h2><p>{t('Du kan betale etter at bilvasken er utført.')}</p><p>{t('Send betalingen til dette nummeret i Vipps-appen.')}</p></div><div><span>{t('Vipps-nummer')}</span><strong>{number}</strong></div></section>;
 }

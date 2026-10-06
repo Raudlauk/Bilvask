@@ -263,7 +263,7 @@ export default function Admin() {
                 <TabsTrigger value="booking" disabled={requiresPasswordChange} aria-label={t('Bestillingsinnstillinger')}><span className="tab-label-wide">{t('Bestillingsinnstillinger')}</span><span className="tab-label-mobile" aria-hidden="true">{t('Bestilling')}</span></TabsTrigger>
               </TabsList>}
               {role==='admin'&&<TabsContent value="booking">
-                {!requiresPasswordChange && <><div className="settings-stack"><SiteNameSettings /><BookingSettings /><ClosedDates /><PriceEditor /><PolishSettings /><StatusSettings /><ContactSection edit /><BookingSettings mapsOnly /></div><SettingsSaveBar /></>}
+                {!requiresPasswordChange && <><div className="settings-stack"><BookingSettings /><ClosedDates /><PriceEditor /><PolishSettings /><StatusSettings /><SiteNameSettings /><ContactSection edit /><BookingSettings mapsOnly /></div><SettingsSaveBar /></>}
               </TabsContent>}
 
             {error && (

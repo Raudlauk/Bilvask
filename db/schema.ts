@@ -61,6 +61,7 @@ export const sessions = sqliteTable('sessions', {
   viewerId: text('viewer_id'),
 });
 export const viewers = sqliteTable('viewers', {
+  role: text('role', { enum: ['viewer', 'manager'] }).notNull().default('viewer'),
   id: text('id').primaryKey(),
   username: text('username').notNull().unique(),
   hash: text('hash').notNull(),

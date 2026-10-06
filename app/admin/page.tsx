@@ -35,15 +35,15 @@ export default function Admin() {
  const {t,language}=useLanguage();
  const activeRequest = useRef<AbortController | null>(null);
  const [statusEnabled,setStatusEnabled]=useState(false);
- const [role,setRole]=useState<'admin'|'viewer'>('viewer');
+ const [role,setRole]=useState<'admin'|'viewer'|'manager'>('viewer');
  const [requiresPasswordChange,setRequiresPasswordChange]=useState(false);
  const [durationJob,setDurationJob]=useState<Job|null>(null),[editMinutes,setEditMinutes]=useState(''),[durationBusy,setDurationBusy]=useState(false),[durationError,setDurationError]=useState('');
- async function saveDuration(e:React.FormEvent){e.preventDefault();if(!durationJob||role!=='admin')return;setDurationBusy(true);setDurationError('');try{const r=await fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'duration',id:durationJob.id,duration:Number(editMinutes),expectedDuration:durationJob.duration})});const b=await r.json() as {error?:string};if(!r.ok)throw new Error(b.error);setDurationJob(null);setCancelNotice('Vasketiden er oppdatert.');await load()}catch(e){setDurationError(e instanceof Error?e.message:'Prøv igjen.')}finally{setDurationBusy(false)}}
+ async function saveDuration(e:React.FormEvent){e.preventDefault();if(!durationJob||role==='viewer')return;setDurationBusy(true);setDurationError('');try{const r=await fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'duration',id:durationJob.id,duration:Number(editMinutes),expectedDuration:durationJob.duration})});const b=await r.json() as {error?:string};if(!r.ok)throw new Error(b.error);setDurationJob(null);setCancelNotice('Vasketiden er oppdatert.');await load()}catch(e){setDurationError(e instanceof Error?e.message:'Prøv igjen.')}finally{setDurationBusy(false)}}
  const [rescheduleJob,setRescheduleJob]=useState<Job|null>(null),[editDate,setEditDate]=useState(''),[editStart,setEditStart]=useState(''),[rescheduleBusy,setRescheduleBusy]=useState(false),[rescheduleError,setRescheduleError]=useState('');
  function minutesFromTime(value:string){const match=value.match(/^(\d{2}):(\d{2})$/);return match?Number(match[1])*60+Number(match[2]):-1}
- async function saveReschedule(e:React.FormEvent){e.preventDefault();if(!rescheduleJob||role!=='admin')return;setRescheduleBusy(true);setRescheduleError('');try{const r=await fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'reschedule',id:rescheduleJob.id,date:editDate,start:minutesFromTime(editStart),expectedDate:rescheduleJob.date,expectedStart:rescheduleJob.start})});const b=await r.json() as {error?:string;smsWarning?:string};if(!r.ok)throw new Error(b.error);setRescheduleJob(null);setCancelNotice(b.smsWarning?`Timen er flyttet. ${b.smsWarning}`:'Timen er flyttet, og kunden har fått SMS om endringen.');await load()}catch(e){setRescheduleError(e instanceof Error?e.message:'Prøv igjen.')}finally{setRescheduleBusy(false)}}
+ async function saveReschedule(e:React.FormEvent){e.preventDefault();if(!rescheduleJob||role==='viewer')return;setRescheduleBusy(true);setRescheduleError('');try{const r=await fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'reschedule',id:rescheduleJob.id,date:editDate,start:minutesFromTime(editStart),expectedDate:rescheduleJob.date,expectedStart:rescheduleJob.start})});const b=await r.json() as {error?:string;smsWarning?:string};if(!r.ok)throw new Error(b.error);setRescheduleJob(null);setCancelNotice(b.smsWarning?`Timen er flyttet. ${b.smsWarning}`:'Timen er flyttet, og kunden har fått SMS om endringen.');await load()}catch(e){setRescheduleError(e instanceof Error?e.message:'Prøv igjen.')}finally{setRescheduleBusy(false)}}
  const [cancelJob,setCancelJob]=useState<Job|null>(null),[cancelError,setCancelError]=useState(''),[cancelBusy,setCancelBusy]=useState(false),[cancelNotice,setCancelNotice]=useState('');
- async function cancelBooking(){if(!cancelJob||role!=='admin')return;setCancelBusy(true);setCancelError('');try{
+ async function cancelBooking(){if(!cancelJob||role==='viewer')return;setCancelBusy(true);setCancelError('');try{
    const response=await fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'cancel-booking',id:cancelJob.id})});
    const data=await response.json() as {error?:string;smsWarning?:string};
    if(!response.ok){if(response.status===401){setLogged(false);setJobs([]);setCancelJob(null)}throw new Error(data.error)}
@@ -76,7 +76,7 @@ export default function Admin() {
         username: string;
         bookings: Job[];statusEnabled:boolean;
         requiresPasswordChange?: boolean;
-        role:'admin'|'viewer';
+        role:'admin'|'viewer'|'manager';
       };
       if (r.status === 401) {
         setLogged(false);
@@ -84,7 +84,8 @@ export default function Admin() {
       }
       if (!r.ok) throw new Error(b.error);
       setStatusEnabled(b.statusEnabled);setRole(b.role);
-      if(b.role!=='admin'){setSettings(false);setBookingSettings(false);setCancelJob(null);setCurrent('');setNewPassword('');setConfirm('');}
+      if(b.role==='viewer'){setCancelJob(null);setDurationJob(null);setRescheduleJob(null);}
+      if(b.role!=='admin'){setSettings(false);setBookingSettings(false);setCurrent('');setNewPassword('');setConfirm('');}
       setLogged(true);
       setUsername(b.username);
       setJobs(b.bookings);
@@ -360,9 +361,9 @@ export default function Admin() {
                         <a href={'tel:' + j.phone.replace(/[^+\d]/g, '')}>
                           {/^[0-9]{8}$/.test(j.phone) ? j.phone.replace(/([0-9]{2})(?=[0-9])/g, '$1 ') : j.phone}
                         </a>
-                        {(statusEnabled||role==='admin')&&<div className="job-footer">
-                        {statusEnabled&&<WashProgress id={j.id} status={j.status} onSaved={()=>load({background:true})}/>}
-                        {role==='admin'&&<div className="job-actions"><button className="secondary" onClick={()=>{setRescheduleJob(j);setEditDate(j.date);setEditStart(timeLabel(j.start));setRescheduleError('');setCancelNotice('')}}>{t('Endre dato/tid')}</button><button className="secondary" onClick={()=>{setDurationJob(j);setEditMinutes(String(j.duration));setDurationError('')}}>{t('Endre vasketid')}</button><button className="secondary cancel-booking" onClick={()=>{setCancelJob(j);setCancelError('');setCancelNotice('')}}>{t('Avbestill')}</button></div>}
+                        {(statusEnabled||role!=='viewer')&&<div className="job-footer">
+                        {statusEnabled&&<WashProgress readOnly={role==='viewer'} id={j.id} status={j.status} onSaved={()=>load({background:true})}/>}
+                        {role!=='viewer'&&<div className="job-actions"><button className="secondary" onClick={()=>{setRescheduleJob(j);setEditDate(j.date);setEditStart(timeLabel(j.start));setRescheduleError('');setCancelNotice('')}}>{t('Endre dato/tid')}</button><button className="secondary" onClick={()=>{setDurationJob(j);setEditMinutes(String(j.duration));setDurationError('')}}>{t('Endre vasketid')}</button><button className="secondary cancel-booking" onClick={()=>{setCancelJob(j);setCancelError('');setCancelNotice('')}}>{t('Avbestill')}</button></div>}
                         </div>}
                       </article>
                     ))}
@@ -381,21 +382,21 @@ export default function Admin() {
           </>
         )}
       </main>
-      <AlertDialog open={!!rescheduleJob&&role==='admin'} onOpenChange={open=>{if(!open&&!rescheduleBusy)setRescheduleJob(null)}}>
+      <AlertDialog open={!!rescheduleJob&&role!=='viewer'} onOpenChange={open=>{if(!open&&!rescheduleBusy)setRescheduleJob(null)}}>
         <AlertDialogContent className={`cancel-dialog ${styles.dialog}`}><AlertDialogHeader><AlertDialogTitle>{t('Endre dato og tidspunkt')}</AlertDialogTitle><AlertDialogDescription>{rescheduleJob&&<>{rescheduleJob.name}<br/>{t('Nåværende time')}: {dateLabel(rescheduleJob.date,language)} · {timeLabel(rescheduleJob.start)}–{timeLabel(rescheduleJob.start+rescheduleJob.duration)}<br/></>}{t('Vasketid og pris beholdes. Kunden får SMS når endringen lagres.')}</AlertDialogDescription></AlertDialogHeader>
         <form className="duration-editor" onSubmit={saveReschedule}><label>{t('Ny dato')}<input type="date" min={today()} required disabled={rescheduleBusy} value={editDate} onChange={e=>setEditDate(e.target.value)}/></label><label>{t('Ny starttid')}<input type="time" min="08:00" max="14:00" step="900" required disabled={rescheduleBusy} value={editStart} onChange={e=>setEditStart(e.target.value)}/></label>
         {rescheduleJob&&minutesFromTime(editStart)>=0&&<p className="muted">{t('Ny tid')}: {editDate?dateLabel(editDate,language):''} · {editStart}–{timeLabel(minutesFromTime(editStart)+rescheduleJob.duration)}</p>}
         {rescheduleError&&<p className="error" role="alert">{t(rescheduleError)}</p>}
         <AlertDialogFooter><button type="button" className="secondary" disabled={rescheduleBusy} onClick={()=>setRescheduleJob(null)}>{t('Lukk')}</button><button type="submit" className="primary" disabled={rescheduleBusy}>{t(rescheduleBusy?'Lagrer…':'Lagre ny time')}</button></AlertDialogFooter></form></AlertDialogContent>
       </AlertDialog>
-      <AlertDialog open={!!durationJob&&role==='admin'} onOpenChange={open=>{if(!open&&!durationBusy)setDurationJob(null)}}>
+      <AlertDialog open={!!durationJob&&role!=='viewer'} onOpenChange={open=>{if(!open&&!durationBusy)setDurationJob(null)}}>
         <AlertDialogContent className={`cancel-dialog ${styles.dialog}`}><AlertDialogHeader><AlertDialogTitle>{t('Endre vasketid')}</AlertDialogTitle><AlertDialogDescription>{durationJob&&<>{durationJob.name} · {dateLabel(durationJob.date,language)}<br/>{t('Starttid')}: {timeLabel(durationJob.start)}<br/></>}{t('Endrer kun denne bestillingen. Starttid og pris beholdes.')}</AlertDialogDescription></AlertDialogHeader>
         <form className="duration-editor" onSubmit={saveDuration}><label>{t('Vasketid i minutter')}<input type="number" min="15" max="240" step="15" required disabled={durationBusy} value={editMinutes} onChange={e=>setEditMinutes(e.target.value)}/></label>
         {durationJob&&Number(editMinutes)>0&&<p className="muted">{t('Ny sluttid')}: {timeLabel(durationJob.start+Number(editMinutes))}</p>}
         {durationError&&<p className="error" role="alert">{t(durationError)}</p>}
         <AlertDialogFooter><button type="button" className="secondary" disabled={durationBusy} onClick={()=>setDurationJob(null)}>{t('Lukk')}</button><button type="submit" className="primary" disabled={durationBusy}>{t(durationBusy?'Lagrer…':'Lagre vasketid')}</button></AlertDialogFooter></form></AlertDialogContent>
       </AlertDialog>
-      <AlertDialog open={!!cancelJob} onOpenChange={open=>{if(!open&&!cancelBusy)setCancelJob(null)}}>
+      <AlertDialog open={!!cancelJob&&role!=='viewer'} onOpenChange={open=>{if(!open&&!cancelBusy)setCancelJob(null)}}>
         <AlertDialogContent className={`cancel-dialog ${styles.dialog}`}>
           <AlertDialogHeader><AlertDialogTitle>{t('Avbestille denne bilvasken?')}</AlertDialogTitle><AlertDialogDescription>{cancelJob&&<>{cancelJob.name}<br/>{dateLabel(cancelJob.date,language)} · {timeLabel(cancelJob.start)}–{timeLabel(cancelJob.start+cancelJob.duration)}<br/></>}{t('Bestillingen fjernes, og plassen blir tilgjengelig for andre.')}</AlertDialogDescription></AlertDialogHeader>
           {cancelError&&<p className="error" role="alert">{t(cancelError)}</p>}

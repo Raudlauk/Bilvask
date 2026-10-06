@@ -1186,6 +1186,46 @@ input {
 .user-manager .form-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
+.user-manager select {
+  font: inherit;
+  min-height: 44px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: white;
+  color: inherit;
+}
+.user-manager select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.user-manager form > label,
+.user-manager .user-actions label {
+  display: grid;
+  gap: var(--space-2);
+  font-size: 14px;
+}
+.user-manager form > label {
+  max-width: 300px;
+  margin: var(--space-4) 0;
+}
+.user-manager .user-actions {
+  align-items: end;
+  justify-content: flex-end;
+}
+.user-manager .closed-date-list li {
+  flex-wrap: wrap;
+}
+@media (max-width: 720px) {
+  .user-manager .closed-date-list li {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .user-manager .user-actions {
+    justify-content: flex-start;
+  }
+}
 .user-manager .closed-date-list span {
   overflow-wrap: anywhere;
 }

@@ -1,0 +1,1 @@
+ALTER TABLE `viewers` ADD `role` text DEFAULT 'viewer' NOT NULL;

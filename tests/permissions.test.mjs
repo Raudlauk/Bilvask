@@ -6,6 +6,14 @@ import {createRequire} from 'node:module';
 import {DatabaseSync} from 'node:sqlite';
 import ts from 'typescript';
 const require=createRequire(import.meta.url);
+// Verify additive migration preserves a pre-existing restricted account.
+const legacy=new DatabaseSync(':memory:');
+const migrations=fs.readdirSync('drizzle').filter(f=>f.endsWith('.sql')).sort();
+for(const file of migrations.slice(0,-1))legacy.exec(fs.readFileSync('drizzle/'+file,'utf8'));
+legacy.prepare('INSERT INTO viewers (id,username,hash,salt,version,active) VALUES (?,?,?,?,?,?)').run('legacy','legacy-reader','fixture-hash','fixture-salt',7,1);
+legacy.exec(fs.readFileSync('drizzle/'+migrations.at(-1),'utf8'));
+assert.equal(legacy.prepare('SELECT role FROM viewers WHERE id=?').get('legacy').role,'viewer');
+assert.equal(legacy.prepare('SELECT version FROM viewers WHERE id=?').get('legacy').version,7);legacy.close();
 const sqlite=new DatabaseSync(':memory:');
 for(const file of fs.readdirSync('drizzle').filter(f=>f.endsWith('.sql')).sort()) sqlite.exec(fs.readFileSync('drizzle/'+file,'utf8'));
 const DB={prepare(sql){let params=[];const execute=method=>{const statement=sqlite.prepare(sql);return /\?\d/.test(sql)?statement[method](Object.fromEntries(params.map((p,i)=>[String(i+1),p]))):statement[method](...params);};return {bind(...values){params=values;return this},async first(){return execute('get')??null},async all(){return {results:execute('all')}},async run(){return {meta:execute('run')}}};},async batch(statements){const result=[];for(const stmt of statements)result.push(await stmt.run());return result}};
@@ -19,7 +27,7 @@ async function login(username,password){const response=await admin.POST(req({act
 const adminCookie=await login('admin',adminPassword);
 assert.equal(await server.authorized(req(null,adminCookie)),true);
 assert.equal((await users.POST(req({action:'create',username:'worker',password:'Work-test-9381'},adminCookie))).status,201);
-const stored=sqlite.prepare('SELECT * FROM viewers').get();assert.notEqual(stored.hash,'Work-test-9381');assert.equal(stored.active,1);
+const stored=sqlite.prepare('SELECT * FROM viewers').get();assert.notEqual(stored.hash,'Work-test-9381');assert.equal(stored.active,1);assert.equal(stored.role,'viewer');
 assert.equal((await users.POST(req({action:'create',username:'WORKER',password:'Work-test-9381'},adminCookie))).status,409);
 assert.equal((await users.POST(req({action:'create',username:'ADMIN',password:'Work-test-9381'},adminCookie))).status,409);
 assert.equal((await users.POST(req({action:'create',username:'short',password:'123'},adminCookie))).status,400);
@@ -122,6 +130,37 @@ assert.equal(priceRules.bookingTotal(examplePrices,true,true,true,true,69900,fal
 assert.equal(priceRules.bookingTotal(examplePrices,true,false,false,false,null,true,20),35880);
 assert.equal(priceRules.bookingTotal({...examplePrices,inside:null},true,false,false,false,null,true,20),null);
 assert.equal(priceRules.servicePrice(19999,true,15),22999);
+// Role changes invalidate both upgrades and downgrades, and cannot create admins.
+assert.equal((await users.POST(req({action:'create',username:'manager',password:'Manager-test-9381',role:'manager'},adminCookie))).status,201);
+assert.equal((await users.POST(req({action:'create',username:'escalation',password:'Manager-test-9381',role:'admin'},adminCookie))).status,400);
+const manager=sqlite.prepare('SELECT id FROM viewers WHERE username=?').get('manager');
+let managerCookie=await login('manager','Manager-test-9381');
+assert.equal((await server.currentUser(req(null,managerCookie))).role,'manager');
+assert.equal(await server.authorized(req(null,managerCookie)),false);
+const managerSchedule=await admin.GET(req(null,managerCookie));assert.equal(managerSchedule.status,200);assert.equal((await managerSchedule.json()).role,'manager');
+const userList=await (await users.GET(req(null,adminCookie))).json();assert.ok(userList.users.every(user=>!('hash' in user)&&!('salt' in user)));
+assert.equal((await users.GET(req(null,managerCookie))).status,403);
+for(const name of ['prices','contact','booking-settings','closed-dates','recovery-email','users','polish-settings']){
+ const route=load('app/api/'+name+'/route.ts');assert.ok([401,403].includes((await route.POST(req({action:'create'},managerCookie,name))).status),name+' rejects manager writes');
+}
+assert.equal((await admin.POST(req({action:'credentials',username:'manager',currentPassword:adminPassword,password:'Replacement-9381'},managerCookie))).status,403);
+assert.equal((await users.POST(req({action:'role',id:manager.id,role:'admin'},adminCookie))).status,400);
+const readCookie=await login('worker','Work-test-9381');
+for(const action of ['progress','duration','reschedule','cancel-booking'])assert.equal((await admin.POST(req({action,id:polishReceipt.id,status:1,expectedStatus:0,duration:120,expectedDuration:105,date:polishDate,start:600,expectedDate:polishDate,expectedStart:480},readCookie))).status,403);
+assert.equal(sqlite.prepare('SELECT duration,status,start FROM bookings WHERE id=?').get(polishReceipt.id).duration,105);
+assert.equal((await users.POST(req({action:'role',id:stored.id,role:'manager'},adminCookie))).status,200);
+assert.equal((await admin.GET(req(null,readCookie))).status,401);
+const upgradedCookie=await login('worker','Work-test-9381');assert.equal((await server.currentUser(req(null,upgradedCookie))).role,'manager');
+assert.equal((await users.POST(req({action:'role',id:stored.id,role:'viewer'},adminCookie))).status,200);
+assert.equal((await admin.GET(req(null,upgradedCookie))).status,401);
+assert.equal((await users.POST(req({action:'role',id:manager.id,role:'viewer'},adminCookie))).status,200);
+assert.equal((await admin.GET(req(null,managerCookie))).status,401);
+assert.equal((await users.POST(req({action:'role',id:manager.id,role:'manager'},adminCookie))).status,200);
+managerCookie=await login('manager','Manager-test-9381');
+// Stored roles outside the supported set fail closed, even with a valid session.
+sqlite.prepare('UPDATE viewers SET role=? WHERE id=?').run('admin',manager.id);
+assert.equal(await server.currentUser(req(null,managerCookie)),null);
+sqlite.prepare('UPDATE viewers SET role=? WHERE id=?').run('manager',manager.id);
 const deleteCookie=await login('worker','Work-test-9381');
 const statusRoute=load('app/api/wash-status/route.ts');
 const lookup={code:polishReceipt.id,lookup:'12345678'};
@@ -137,11 +176,20 @@ assert.equal((await statusRoute.POST(req({...lookup,code:shortCode,lookup:'wrong
 assert.equal((await statusRoute.POST(req({...lookup,lookup:'wrong'}))).status,404);
 assert.equal((await statusRoute.POST(req({...lookup,code:'wrong'}))).status,404);
 assert.equal((await admin.POST(req({action:'progress',id:polishReceipt.id,status:1,expectedStatus:0}))).status,401);
-assert.equal((await admin.POST(req({action:'progress',id:polishReceipt.id,status:1,expectedStatus:0},deleteCookie))).status,200);
+assert.equal((await admin.POST(req({action:'progress',id:polishReceipt.id,status:1,expectedStatus:0},deleteCookie))).status,403);
+assert.equal((await admin.POST(req({action:'progress',id:polishReceipt.id,status:1,expectedStatus:0},managerCookie))).status,200);
 assert.equal((await (await statusRoute.POST(req(lookup))).json()).status,1);
 assert.equal((await admin.POST(req({action:'progress',id:polishReceipt.id,status:2,expectedStatus:0},adminCookie))).status,409);
 assert.equal((await admin.POST(req({action:'progress',id:polishReceipt.id,status:2,expectedStatus:1},adminCookie))).status,200);
 assert.equal((await (await statusRoute.POST(req({...lookup,lookup:'Polish test'}))).json()).status,2);
+assert.equal((await admin.POST(req({action:'duration',id:polishReceipt.id,duration:120,expectedDuration:105},managerCookie))).status,200);
+assert.equal((await admin.POST(req({action:'duration',id:polishReceipt.id,duration:135,expectedDuration:105},managerCookie))).status,409);
+assert.equal((await settingsRoute.POST(req({...mapSettings,weekdays:62},adminCookie))).status,200);
+const moveResponse=await admin.POST(req({action:'reschedule',id:polishReceipt.id,date:polishDate,start:720,expectedDate:polishDate,expectedStart:480},managerCookie));assert.equal(moveResponse.status,200,JSON.stringify(await moveResponse.json()));
+assert.equal(sqlite.prepare('SELECT start FROM bookings WHERE id=?').get(polishReceipt.id).start,720);
+const cancelId=crypto.randomUUID();sqlite.prepare('INSERT INTO bookings(id,name,phone,date,start,duration,inside,outside,created) VALUES(?,?,?,?,480,30,0,1,?)').run(cancelId,'Manager cancellation','12345678',polishDate,Date.now());
+assert.equal((await admin.POST(req({action:'cancel-booking',id:cancelId},managerCookie))).status,200);
+assert.equal(sqlite.prepare('SELECT id FROM bookings WHERE id=?').get(cancelId),undefined);
 assert.equal((await settingsRoute.POST(req({action:'status-enabled',statusEnabled:false},adminCookie))).status,200);
 assert.equal((await statusRoute.POST(req(lookup))).status,403);
 assert.equal((await admin.POST(req({action:'progress',id:polishReceipt.id,status:0,expectedStatus:2},deleteCookie))).status,403);
@@ -157,4 +205,4 @@ assert.equal(sqlite.prepare('SELECT COUNT(*) AS n FROM bookings').get().n,bookin
 assert.equal(await server.authorized(req(null,adminCookie)),true);
 assert.equal((await users.POST(req({action:'delete',id:stored.id},adminCookie))).status,404);
 sqlite.prepare('UPDATE sessions SET expires=0').run();assert.equal(await server.authorized(req(null,adminCookie)),false);
-sqlite.close();console.log('PASS: real password login, role-bound sessions, schedule access, every privileged API blocked for viewers, unchanged booking after rejected cancellation, admin cancellation, username collisions, disable/reactivate, stale sessions, logout, expiry and origin protection.');
+sqlite.close();console.log('PASS: migration preserves read-only users, manager order actions, viewer mutation denial, role upgrade/downgrade session invalidation, escalation denial, real password login, role-bound sessions, schedule access, every privileged API blocked for viewers, unchanged booking after rejected cancellation, admin cancellation, username collisions, disable/reactivate, stale sessions, logout, expiry and origin protection.');

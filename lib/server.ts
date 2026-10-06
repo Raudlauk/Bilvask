@@ -112,10 +112,10 @@ export async function currentUser(req: Request) {
   return await db()
     .prepare(
       `SELECT 'admin' AS role,a.username,a.version FROM sessions s JOIN admins a ON a.id=1 AND a.version=s.version WHERE s.viewer_id IS NULL AND s.token=?1 AND s.expires>?2
-       UNION ALL SELECT 'viewer' AS role,v.username,v.version FROM sessions s JOIN viewers v ON v.id=s.viewer_id AND v.version=s.version AND v.active=1 WHERE s.token=?1 AND s.expires>?2`,
+       UNION ALL SELECT v.role,v.username,v.version FROM sessions s JOIN viewers v ON v.id=s.viewer_id AND v.version=s.version AND v.active=1 AND v.role IN ('viewer','manager') WHERE s.token=?1 AND s.expires>?2`,
     )
     .bind(await digest(token), Date.now())
-    .first<{role:'admin'|'viewer';username:string;version:number}>();
+    .first<{role:'admin'|'viewer'|'manager';username:string;version:number}>();
 }
 export function cookie(req: Request, token: string, age = 28800) {
   return `gleam_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${age}${new URL(req.url).protocol === 'https:' ? '; Secure' : ''}`;

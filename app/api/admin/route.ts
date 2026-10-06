@@ -90,6 +90,9 @@ export async function POST(req: Request) {
         .run();
       return json({ ok: true }, 200, { 'Set-Cookie': cookie(req, '', 0) });
     }
+    const orderAction=['progress','reschedule','duration','cancel-booking'].includes(String(b.action));
+    if(user.role==='viewer'||(user.role!=='admin'&&!orderAction))return json({error:'Du har ikke tilgang til denne handlingen.'},403);
+    if(orderAction&&user.role==='admin'&&user.version===1)return json({error:'Bytt standardpassordet først.'},403);
     if(b.action==='progress'){
       if(!(await getBookingSettings()).statusEnabled)return json({error:'Statusvisning er deaktivert.'},403);
       if(user.role==='admin'&&user.version===1)return json({error:'Bytt standardpassordet først.'},403);
@@ -97,9 +100,7 @@ export async function POST(req: Request) {
       const result=await db().prepare('UPDATE bookings SET status=? WHERE id=? AND status=?').bind(b.status,b.id,b.expectedStatus).run();
       return result.meta.changes?json({ok:true}):json({error:'Status er endret. Oppdater arbeidslisten.'},409);
     }
-    if(user.role!=='admin') return json({error:'Du har kun lesetilgang til arbeidslisten.'},403);
     if (b.action === 'reschedule') {
-      if((await getAdmin()).version===1)return json({error:'Bytt standardpassordet først.'},403);
       if(typeof b.id!=='string'||!/^[a-f0-9-]{36}$/.test(b.id)||typeof b.date!=='string'||!validDate(b.date)||typeof b.start!=='number'||!Number.isInteger(b.start)||typeof b.expectedDate!=='string'||typeof b.expectedStart!=='number'||!Number.isInteger(b.expectedStart))
         return json({error:'Velg en gyldig dato og starttid.'},400);
       const booking=await db().prepare('SELECT id,name,phone,date,start,duration FROM bookings WHERE id=?').bind(b.id).first<{id:string;name:string;phone:string;date:string;start:number;duration:number}>();
@@ -126,7 +127,6 @@ export async function POST(req: Request) {
       return json({ok:true,...(smsWarning?{smsWarning:'Timen er flyttet, men én eller flere SMS-meldinger kunne ikke oppdateres/sendes.'}:{})});
     }
     if (b.action === 'duration') {
-      if((await getAdmin()).version===1)return json({error:'Bytt standardpassordet først.'},403);
       if(typeof b.id!=='string'||!/^[a-f0-9-]{36}$/.test(b.id)||typeof b.duration!=='number'||!Number.isInteger(b.duration)||b.duration<15||b.duration>240||b.duration%15!==0||typeof b.expectedDuration!=='number')
         return json({error:'Velg 15–240 minutter i trinn på 15.'},400);
       // Check the saved duration and conflicts in the same atomic update.
@@ -138,7 +138,6 @@ export async function POST(req: Request) {
       return json({ok:true});
     }
     if (b.action === 'cancel-booking') {
-      if((await getAdmin()).version===1)return json({error:'Bytt standardpassordet først.'},403);
       if(typeof b.id!=='string'||!/^[a-f0-9-]{36}$/.test(b.id))return json({error:'Ugyldig bestilling.'},400);
       const booking=await db().prepare('SELECT id,name,phone,date,start,duration FROM bookings WHERE id=?').bind(b.id).first<{id:string;name:string;phone:string;date:string;start:number;duration:number}>();
       if(!booking)return json({error:'Bestillingen er allerede fjernet. Oppdater arbeidslisten.'},404);
@@ -151,6 +150,7 @@ export async function POST(req: Request) {
       const smsWarning=reminderWarning||cancelSmsWarning;
       return json({ok:true,...(smsWarning?{smsWarning:'Bestillingen er avbestilt, men én eller flere SMS-meldinger kunne ikke oppdateres/sendes.'}:{})});
     }
+    if(user.role!=='admin')return json({error:'Kun administrator har tilgang.'},403);
     if (b.action === 'credentials') {
       if (await throttle(req,'credentials',10) || await throttle(req,'credentials-account',20,true)) return json({error:'For mange forsøk. Prøv igjen om 15 minutter.'},429);
       const admin = await getAdmin();

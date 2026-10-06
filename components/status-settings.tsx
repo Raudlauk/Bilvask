@@ -1,13 +1,22 @@
 'use client';
 import {useEffect,useState} from 'react';
 import {useLanguage} from './language';
+import {ChangedBadge,useSettingsSection} from './settings-save';
+
+type Values={enabled:boolean;changes:boolean};
 export function StatusSettings(){
- const {t}=useLanguage(),[enabled,setEnabled]=useState(false),[changes,setChanges]=useState(false),[ready,setReady]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[saved,setSaved]=useState(false),[retry,setRetry]=useState(0);
- useEffect(()=>{const c=new AbortController();fetch('/api/booking-settings',{signal:c.signal}).then(async r=>{if(!r.ok)throw new Error('Prøv igjen.');const b=await r.json() as {statusEnabled:boolean;customerChanges?:boolean;error:string};setEnabled(b.statusEnabled);setChanges(!!b.customerChanges);setReady(true);setError('')}).catch(e=>{if(!c.signal.aborted)setError(e.message)});return()=>c.abort()},[retry]);
- async function save(e:React.SubmitEvent<HTMLFormElement>){e.preventDefault();setBusy(true);setError('');try{const r=await fetch('/api/booking-settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'status-enabled',statusEnabled:enabled,customerChanges:enabled&&changes})});const b=await r.json() as {statusEnabled:boolean;error:string};if(!r.ok)throw new Error(b.error);setSaved(true)}catch(e){setError(e instanceof Error?e.message:'Prøv igjen.')}finally{setBusy(false)}}
+ const {t}=useLanguage(),[values,setValues]=useState<Values>({enabled:false,changes:false}),[saved,setSaved]=useState<Values>({enabled:false,changes:false}),[ready,setReady]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[retry,setRetry]=useState(0);
+ useEffect(()=>{const c=new AbortController();fetch('/api/booking-settings',{signal:c.signal}).then(async r=>{if(!r.ok)throw new Error('Prøv igjen.');const b=await r.json() as {statusEnabled:boolean;customerChanges?:boolean};const loaded={enabled:b.statusEnabled,changes:!!b.customerChanges};setValues(loaded);setSaved(loaded);setReady(true);setError('')}).catch(e=>{if(!c.signal.aborted)setError(e.message)});return()=>c.abort()},[retry]);
+ // Customer changes only apply while status is enabled.
+ const effective={enabled:values.enabled,changes:values.enabled&&values.changes};
+ const dirty=ready&&(effective.enabled!==saved.enabled||effective.changes!==saved.changes);
+ useSettingsSection('status',{label:'Vaskestatus',dirty,validate:()=>true,
+  save:async()=>{setBusy(true);setError('');try{const r=await fetch('/api/booking-settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'status-enabled',statusEnabled:effective.enabled,customerChanges:effective.changes})});const b=await r.json() as {error?:string};if(!r.ok)throw new Error(b.error);setSaved(effective)}catch(e){setError(e instanceof Error?e.message:'Prøv igjen.');throw e}finally{setBusy(false)}},
+  reset:()=>{setValues(saved);setError('')},
+ });
  const row={display:'flex',gap:10,alignItems:'center',margin:'20px 0'} as const;
- return <section className="panel"><h2>{t('Vaskestatus')}</h2><p className="muted">{t('Kunder kan sjekke status med navn eller telefonnummer og bestillingskode. Ansatte kan oppdatere fremdriften.')}</p>{ready&&<form onSubmit={save}>
-  <label style={row}><input style={{width:18}} type="checkbox" checked={enabled} disabled={busy} onChange={e=>{setEnabled(e.target.checked);setSaved(false)}}/>{t('Aktiver vaskestatus')}</label>
-  <label style={{...row,alignItems:'flex-start'}}><input style={{width:18,marginTop:3}} type="checkbox" checked={enabled&&changes} disabled={busy||!enabled} onChange={e=>{setChanges(e.target.checked);setSaved(false)}}/><span>{t('La kunder flytte eller avbestille timen selv')}<br/><small className="muted">{t('Med telefonnummer og bestillingskode, frem til 2 timer før timen og før vasken er påbegynt. Endringer vises i arbeidslisten.')}</small></span></label>
-  <button className="primary" disabled={busy}>{t('Lagre innstillinger')}</button></form>}{error&&<p role="alert" className="error">{t(error)}{!ready&&<button className="secondary" onClick={()=>setRetry(v=>v+1)}>{t('Prøv igjen')}</button>}</p>}{saved&&<p role="status">{t('Innstillingene er lagret.')}</p>}</section>;
+ return <section className="panel status-settings"><div className="settings-head"><h2>{t('Vaskestatus')} <ChangedBadge show={dirty}/></h2><p className="muted">{t('Kunder kan sjekke status med navn eller telefonnummer og bestillingskode. Ansatte kan oppdatere fremdriften.')}</p></div><div className="settings-body">{ready&&<div>
+  <label style={row}><input style={{width:18}} type="checkbox" checked={values.enabled} disabled={busy} onChange={e=>{setValues(v=>({...v,enabled:e.target.checked}));setError('')}}/>{t('Aktiver vaskestatus')}</label>
+  <label style={{...row,alignItems:'flex-start'}}><input style={{width:18,marginTop:3}} type="checkbox" checked={effective.changes} disabled={busy||!values.enabled} onChange={e=>{setValues(v=>({...v,changes:e.target.checked}));setError('')}}/><span>{t('La kunder flytte eller avbestille timen selv')}<br/><small className="muted">{t('Med telefonnummer og bestillingskode, frem til 2 timer før timen og før vasken er påbegynt. Endringer vises i arbeidslisten.')}</small></span></label>
+ </div>}{error&&<p role="alert" className="error">{t(error)}{!ready&&<button className="secondary" onClick={()=>setRetry(v=>v+1)}>{t('Prøv igjen')}</button>}</p>}</div></section>;
 }

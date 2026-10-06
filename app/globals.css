@@ -907,6 +907,150 @@ input {
   font-weight: 600;
 }
 
+/* Admin booking settings: one column of cards, each with the title and
+   explanation on the left and the fields on the right. */
+.settings-stack {
+  display: grid;
+  gap: 16px;
+  max-width: 1080px;
+}
+.admin-tabs .settings-stack > .panel {
+  display: grid;
+  grid-template-columns: minmax(200px, 280px) minmax(0, 1fr);
+  gap: 16px 48px;
+  align-items: start;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 28px 32px;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  background: white;
+}
+.settings-stack .settings-head h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+.settings-stack .settings-head .muted {
+  margin: 0;
+  max-width: none;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.settings-stack .settings-body {
+  min-width: 0;
+}
+.admin-tabs .settings-stack .settings-body > form,
+.admin-tabs .settings-stack .settings-body > form > label:first-child {
+  margin-top: 0;
+}
+.admin-tabs .settings-stack .settings-body .muted {
+  margin: 8px 0 16px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.admin-tabs .settings-stack .settings-body > form > .muted:last-child {
+  margin-bottom: 0;
+}
+.settings-stack .closed-dates .settings-body,
+.settings-stack .maps-settings .settings-body {
+  max-width: 480px;
+}
+.settings-stack .status-settings .settings-body > div > label:first-child {
+  margin-top: 0 !important;
+}
+.settings-stack .status-settings input[type='checkbox'] {
+  flex: none;
+  width: 18px !important;
+  height: 18px;
+  min-height: 0;
+  padding: 0;
+}
+.settings-stack .contact-fields {
+  margin: 0;
+}
+@media (max-width: 860px) {
+  .admin-tabs .settings-stack > .panel {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 20px;
+  }
+}
+
+/* Shared save bar for the admin settings tab (components/settings-save.tsx). */
+.settings-changed {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #fdf1e3;
+  color: #7a4a12;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+.settings-save-bar {
+  position: sticky;
+  bottom: 16px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  flex-wrap: wrap;
+  margin-top: var(--space-6);
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: #163d46;
+  color: #f6f8f5;
+  box-shadow: 0 12px 32px -12px rgba(16, 60, 71, 0.55);
+}
+.settings-save-bar p {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  min-width: 0;
+  font-size: 14px;
+}
+.settings-save-bar p span {
+  color: #cee0e2;
+}
+.settings-save-bar .ok {
+  color: #d4e775;
+}
+.settings-save-bar .failed {
+  color: #ffd2cc;
+  font-size: 13px;
+}
+.settings-save-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.settings-save-bar .secondary {
+  background: transparent;
+  color: #f6f8f5;
+  border: 1px solid #5d7f86;
+}
+.settings-save-bar .primary {
+  background: #d4e775;
+  color: #163d46;
+}
+@media (max-width: 720px) {
+  .settings-save-bar {
+    bottom: 8px;
+  }
+  .settings-save-actions {
+    width: 100%;
+  }
+  .settings-save-actions button {
+    flex: 1;
+  }
+}
+
 /* Customer self-service changes, shown to staff in the work list. */
 .customer-moved-tag {
   display: inline-block;
@@ -1177,6 +1321,46 @@ input {
   gap: 6px;
   font-size: 14px;
   max-width: 240px;
+}
+.closed-dates .calendar-head {
+  margin: 0 0 12px;
+}
+.closed-dates .calendar-head button {
+  min-width: 40px;
+  min-height: 40px;
+}
+.closed-dates-calendar button {
+  min-height: 44px;
+}
+/* Already closed: distinct from struck-through non-booking days. */
+.closed-dates-calendar button.closed-date:disabled {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 5px 0;
+  text-decoration: none;
+  color: #a12924;
+  background: #fbeeec;
+  box-shadow: inset 0 0 0 1px #e8c4bf;
+}
+.closed-dates-calendar button.closed-date small {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+}
+.closed-dates .calendar-legend {
+  margin: 12px 0 18px;
+  font-size: 13px;
+}
+.close-date-selected {
+  margin: 0;
+  min-width: 160px;
+  font-weight: 600;
+}
+.close-date-form {
+  align-items: center;
 }
 .closed-date-list {
   list-style: none;

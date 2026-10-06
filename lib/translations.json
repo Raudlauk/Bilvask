@@ -412,5 +412,20 @@
   "Timen er flyttet for mange ganger. Kontakt oss for å endre den igjen.": "This booking has been moved too many times. Please contact us to change it again.",
   "Endring av bestillinger er ikke tilgjengelig. Kontakt oss for å endre timen.": "Changing bookings is not available. Please contact us to change your booking.",
   "Velg et tidspunkt minst 2 timer frem i tid.": "Choose a time at least 2 hours from now.",
-  "Tidspunktet er ikke lenger ledig. Velg et annet tidspunkt.": "That time is no longer available. Please choose another time."
+  "Tidspunktet er ikke lenger ledig. Velg et annet tidspunkt.": "That time is no longer available. Please choose another time.",
+  "Endret": "Changed",
+  "Ulagrede endringer": "Unsaved changes",
+  "Forkast": "Discard",
+  "Lagre endringer": "Save changes",
+  "Alle endringer er lagret.": "All changes have been saved.",
+  "Noen endringer ble ikke lagret. Se feilmeldingen i seksjonen.": "Some changes were not saved. See the message in the section.",
+  "Du har ulagrede endringer": "You have unsaved changes",
+  "Vil du lagre før du går videre?": "Do you want to save before you continue?",
+  "Bli her": "Stay here",
+  "Forkast endringer": "Discard changes",
+  "Lagre og fortsett": "Save and continue",
+  "Kontaktinformasjon": "Contact information",
+  "Ikke en bestillingsdag": "Not a booking day",
+  "Overstrøkne dager er ikke bestillingsdager eller er passert. Datoer merket «Stengt» er allerede stengt.": "Struck-through days are not booking days or have passed. Dates marked “Closed” are already closed.",
+  "Velg en dato i kalenderen.": "Choose a date in the calendar."
 }

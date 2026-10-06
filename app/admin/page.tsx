@@ -9,6 +9,7 @@ import { BookingSettings } from '@/components/booking-settings';
 import { ClosedDates } from '@/components/closed-dates';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ContactSection } from '@/components/contact';
+import { SettingsSaveBar, SettingsSaveProvider, useSettingsStore } from '@/components/settings-save';
 import {PriceEditor} from '@/components/price-editor';
 import {money} from '@/lib/prices';
 import {AlertDialog,AlertDialogContent,AlertDialogHeader,AlertDialogTitle,AlertDialogDescription,AlertDialogFooter,AlertDialogCancel,AlertDialogAction} from '@/components/ui/alert-dialog';
@@ -37,6 +38,10 @@ export default function Admin() {
  const {t,language}=useLanguage();
  const activeRequest = useRef<AbortController | null>(null);
  const [statusEnabled,setStatusEnabled]=useState(false);
+ // Settings sections share one save bar; leaving with unsaved changes asks first.
+ const settingsStore=useSettingsStore();
+ const [pendingLeave,setPendingLeave]=useState<null|(()=>void|Promise<void>)>(null),[leaveError,setLeaveError]=useState('');
+ function guardUnsaved(next:()=>void|Promise<void>){if(settingsStore.dirty.length){setLeaveError('');setPendingLeave(()=>next)}else void next()}
  const [role,setRole]=useState<'admin'|'viewer'|'manager'>('viewer');
  const [requiresPasswordChange,setRequiresPasswordChange]=useState(false);
  const [durationJob,setDurationJob]=useState<Job|null>(null),[editMinutes,setEditMinutes]=useState(''),[durationBusy,setDurationBusy]=useState(false),[durationError,setDurationError]=useState('');
@@ -234,12 +239,12 @@ export default function Admin() {
                 <button
                   className="secondary"
                   disabled={busy}
-                  onClick={async () => {
+                  onClick={() => guardUnsaved(async () => {
                     if (await action('logout')) {
                       setLogged(false);
                       setJobs([]);
                     }
-                  }}
+                  })}
                 > {t("Logg ut")} </button>
               </div>
                 <p className="muted admin-description">
@@ -248,14 +253,15 @@ export default function Admin() {
                     : t("Bestilte bilvasker i tidsrekkefølge. Alle klokkeslett er i norsk tid.")}
                 </p>
             </div>
-            <Tabs className="admin-tabs" value={bookingSettings ? 'booking' : settings ? 'login' : 'jobs'} onValueChange={value => { setBookingSettings(value === 'booking'); setSettings(value === 'login'); setError(''); }}>
+            <SettingsSaveProvider store={settingsStore}>
+            <Tabs className="admin-tabs" value={bookingSettings ? 'booking' : settings ? 'login' : 'jobs'} onValueChange={value => guardUnsaved(() => { setBookingSettings(value === 'booking'); setSettings(value === 'login'); setError(''); })}>
               {role==='admin'&&<TabsList aria-label={t('Ansattside')}>
                 <TabsTrigger value="jobs" disabled={requiresPasswordChange}>{t('Arbeidsliste')}</TabsTrigger>
                 <TabsTrigger value="login" aria-label={t('Innloggingsinnstillinger')}><span className="tab-label-wide">{t('Innloggingsinnstillinger')}</span><span className="tab-label-mobile" aria-hidden="true">{t('Tilgang')}</span></TabsTrigger>
                 <TabsTrigger value="booking" disabled={requiresPasswordChange} aria-label={t('Bestillingsinnstillinger')}><span className="tab-label-wide">{t('Bestillingsinnstillinger')}</span><span className="tab-label-mobile" aria-hidden="true">{t('Bestilling')}</span></TabsTrigger>
               </TabsList>}
               {role==='admin'&&<TabsContent value="booking">
-                {!requiresPasswordChange && <><div className="admin-settings-grid"><div className="service-settings-column"><BookingSettings /><StatusSettings /><ClosedDates /></div><div className="service-settings-column"><PriceEditor /><PolishSettings /></div></div><ContactSection edit /><BookingSettings mapsOnly /></>}
+                {!requiresPasswordChange && <><div className="settings-stack"><BookingSettings /><ClosedDates /><PriceEditor /><PolishSettings /><StatusSettings /><ContactSection edit /><BookingSettings mapsOnly /></div><SettingsSaveBar /></>}
               </TabsContent>}
 
             {error && (
@@ -395,6 +401,7 @@ export default function Admin() {
               </>
             </TabsContent>
             </Tabs>
+            </SettingsSaveProvider>
           </>
         )}
       </main>
@@ -417,6 +424,17 @@ export default function Admin() {
           <AlertDialogHeader><AlertDialogTitle>{t('Avbestille denne bilvasken?')}</AlertDialogTitle><AlertDialogDescription>{cancelJob&&<>{cancelJob.name}<br/>{dateLabel(cancelJob.date,language)} · {timeLabel(cancelJob.start)}-{timeLabel(cancelJob.start+cancelJob.duration)}<br/></>}{t('Bestillingen fjernes, og plassen blir tilgjengelig for andre.')}</AlertDialogDescription></AlertDialogHeader>
           {cancelError&&<p className="error" role="alert">{t(cancelError)}</p>}
           <AlertDialogFooter><AlertDialogCancel className="secondary" disabled={cancelBusy}>{t('Behold bestillingen')}</AlertDialogCancel><AlertDialogAction className="primary" disabled={cancelBusy} onClick={cancelBooking}>{t(cancelBusy?'Avbestiller…':'Bekreft avbestilling')}</AlertDialogAction></AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={!!pendingLeave} onOpenChange={open=>{if(!open&&!settingsStore.saving)setPendingLeave(null)}}>
+        <AlertDialogContent className={`cancel-dialog ${styles.dialog}`}>
+          <AlertDialogHeader><AlertDialogTitle>{t('Du har ulagrede endringer')}</AlertDialogTitle><AlertDialogDescription>{settingsStore.dirty.map(label=>t(label)).join(', ')}. {t('Vil du lagre før du går videre?')}</AlertDialogDescription></AlertDialogHeader>
+          {leaveError&&<p className="error" role="alert">{t(leaveError)}</p>}
+          <AlertDialogFooter>
+            <AlertDialogCancel className="secondary" disabled={settingsStore.saving}>{t('Bli her')}</AlertDialogCancel>
+            <button type="button" className="secondary" disabled={settingsStore.saving} onClick={()=>{const next=pendingLeave;settingsStore.discardAll();setPendingLeave(null);void next?.()}}>{t('Forkast endringer')}</button>
+            <button type="button" className="primary" disabled={settingsStore.saving} onClick={async()=>{const next=pendingLeave;setLeaveError('');if(await settingsStore.saveAll()){setPendingLeave(null);void next?.()}else setLeaveError('Noen endringer ble ikke lagret. Se feilmeldingen i seksjonen.')}}>{t(settingsStore.saving?'Lagrer…':'Lagre og fortsett')}</button>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>

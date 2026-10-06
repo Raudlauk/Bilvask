@@ -423,6 +423,7 @@ function Booking({ slideBooking,step,setStep,inside, outside,fluid,price,priceRe
           />
         </label>
       </div>
+      <p className="muted privacy-note">{t('Vi bruker navn og telefonnummer bare til å gjennomføre bestillingen og sende SMS om timen.')} <a href="/personvern">{t('Les om personvern')}</a></p>
       </div>
       {error && (
         <div role="alert" className="error">

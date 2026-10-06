@@ -5,6 +5,7 @@ import { INSERT_BOOKING } from '@/lib/booking-sql';
 import { getBookingSettings } from '@/lib/booking-settings';
 import {bookingTotal,emptyPrices,type Prices} from '@/lib/prices';
 import { scheduleReminder, sendBookingConfirmation } from '@/lib/link-sms';
+import { cleanupPersonalData } from '@/lib/retention';
 export async function POST(req: Request) {
   if (!sameOrigin(req)) return json({ error: 'Ugyldig forespørsel.' }, 403);
   try {
@@ -86,6 +87,7 @@ export async function POST(req: Request) {
     ]);
     const smsWarning = smsResults.some((result) => result.status === 'rejected');
     for (const result of smsResults) if (result.status === 'rejected') console.error('Booking SMS failed', result.reason);
+    await cleanupPersonalData();
     return json({ id, name, date, start, duration, inside, outside,fluid,price,largeCar,polish, ...(smsWarning ? { smsWarning: 'Bestillingen er lagret, men én eller flere SMS-meldinger kunne ikke sendes.' } : {}) }, 201,{'Set-Cookie':`steam_receipt=${id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=3600${new URL(req.url).protocol==='https:'?'; Secure':''}`});
   } catch (error) {
     if(error instanceof SyntaxError)return json({error: 'Ugyldig forespørsel.'},400);

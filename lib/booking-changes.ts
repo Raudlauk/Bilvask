@@ -2,6 +2,7 @@ import {db} from './server';
 import {getBookingSettings} from './booking-settings';
 import {available,currentMinutes,today} from './schedule';
 import {cancelReminder,scheduleReminder,sendBookingCancelled,sendBookingChanged} from './link-sms';
+import {CUSTOMER_CHANGE_LOG_DAYS} from './retention-policy';
 
 // Shared by staff (/api/admin) and customers (/api/customer-booking) so both
 // paths keep the same atomic conflict checks and SMS reminder handling.
@@ -60,7 +61,7 @@ async function logCustomerChange(action:'moved'|'cancelled',booking:ChangeableBo
  try{
   const now=Date.now();
   await db().batch([
-   db().prepare('DELETE FROM booking_changes WHERE created<?').bind(now-30*86400000),
+   db().prepare('DELETE FROM booking_changes WHERE created<?').bind(now-CUSTOMER_CHANGE_LOG_DAYS*86400000),
    db().prepare('INSERT INTO booking_changes (id,booking_id,action,name,phone,old_date,old_start,new_date,new_start,created) VALUES (?,?,?,?,?,?,?,?,?,?)')
     .bind(crypto.randomUUID(),booking.id,action,booking.name,booking.phone,booking.date,booking.start,to?.date??null,to?.start??null,now),
   ]);

@@ -372,7 +372,7 @@ export default function Admin() {
                           <small>{dateLabel(j.date, language)}</small>
                         </div>
                         <div>
-                          <h3>{j.name}</h3>
+                          <h3>{j.name||t('Anonymisert')}</h3>
                           {(j.customer_moves??0)>0&&<p className="customer-moved-tag">{t('Flyttet av kunde')}</p>}
                           <p>
                             {j.inside && j.outside
@@ -383,11 +383,11 @@ export default function Admin() {
                             · {j.duration} {t("minutter")} </p>
                           {j.polish===1&&!!(j.inside||j.outside)&&<p className="fluid-tag">{t('Bilpolering')}</p>}{j.large_car===1&&<p className="fluid-tag">{t('Stor bil eller veldig skitten bil')}</p>}{j.fluid===1&&<p className="fluid-tag">{t('Påfyll av spylervæske')}</p>}
                           <p>{t('Totalpris')}: {j.price==null?t('Pris avtales'):money(j.price,language)}</p>
-                          <p className="job-booking-code">{t('Bestillingskode')} <code>{j.status_code}</code></p>
+                          {j.status_code&&<p className="job-booking-code">{t('Bestillingskode')} <code>{j.status_code}</code></p>}
                         </div>
-                        <a href={'tel:' + j.phone.replace(/[^+\d]/g, '')}>
+                        {j.phone?<a href={'tel:' + j.phone.replace(/[^+\d]/g, '')}>
                           {/^[0-9]{8}$/.test(j.phone) ? j.phone.replace(/([0-9]{2})(?=[0-9])/g, '$1 ') : j.phone}
-                        </a>
+                        </a>:<span className="muted">{t('Personopplysninger slettet')}</span>}
                         {(statusEnabled||role!=='viewer')&&<div className="job-footer">
                         {statusEnabled&&<WashProgress readOnly={role==='viewer'} id={j.id} status={j.status} onSaved={()=>load({background:true})}/>}
                         {role!=='viewer'&&<div className="job-actions"><button className="secondary" onClick={()=>{setRescheduleJob(j);setEditDate(j.date);setEditStart(timeLabel(j.start));setRescheduleError('');setCancelNotice('')}}>{t('Endre dato/tid')}</button><button className="secondary" onClick={()=>{setDurationJob(j);setEditMinutes(String(j.duration));setDurationError('')}}>{t('Endre vasketid')}</button><button className="secondary cancel-booking" onClick={()=>{setCancelJob(j);setCancelError('');setCancelNotice('')}}>{t('Avbestill')}</button></div>}

@@ -23,6 +23,7 @@ const LOGIN_MAX_FAILURES_PER_IP = 10;
 import { validDate } from '@/lib/schedule';
 import { cancelBooking, moveBooking } from '@/lib/booking-changes';
 import { SMS_DAILY_CAP, smsEnabled, smsSentToday } from '@/lib/link-sms';
+import { cleanupPersonalData } from '@/lib/retention';
 export async function GET(req: Request) {
   try {
     const user = await currentUser(req);
@@ -30,6 +31,7 @@ export async function GET(req: Request) {
     const date = new URL(req.url).searchParams.get('date');
     if (user.role==='admin' && user.version === 1) return json({username:user.username,role:user.role,bookings:[],requiresPasswordChange:true});
     if (date && !validDate(date)) return json({ error: 'Ugyldig dato' }, 400);
+    await cleanupPersonalData();
     const query = date
       ? db()
           .prepare('SELECT * FROM bookings WHERE date=? ORDER BY start')
@@ -43,9 +45,10 @@ export async function GET(req: Request) {
               timeZone: 'Europe/Oslo',
             }).format(new Date()),
           );
-    const rows = await query.all<{id:string;status_code:string|null}>();
+    const rows = await query.all<{id:string;status_code:string|null;phone:string}>();
     for(const row of rows.results){
-      if(!row.status_code)row.status_code=await bookingCode(row.id);
+      // Anonymised bookings (no phone) must not get a new code.
+      if(!row.status_code&&row.phone)row.status_code=await bookingCode(row.id);
     }
     const customerChanges=(await db().prepare('SELECT id,action,name,phone,old_date,old_start,new_date,new_start,created FROM booking_changes WHERE created>? ORDER BY created DESC LIMIT 20').bind(Date.now()-7*86400000).all()).results;
     return json({ statusEnabled:(await getBookingSettings()).statusEnabled,username: user.username, role:user.role, bookings: rows.results, customerChanges, smsCapReached: smsEnabled() && (await smsSentToday()) >= SMS_DAILY_CAP });

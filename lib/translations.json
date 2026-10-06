@@ -427,7 +427,7 @@
   "Kontaktinformasjon": "Contact information",
   "Ikke en bestillingsdag": "Not a booking day",
   "Overstrøkne dager er ikke bestillingsdager eller er passert. Datoer merket «Stengt» er allerede stengt.": "Struck-through days are not booking days or have passed. Dates marked “Closed” are already closed.",
-  "Velg en dato i kalenderen.": "Choose a date in the calendar.",
+  "Velg en dato i kalenderen.": "Choose a date in the calendar.",
   "Navn på nettsiden": "Site name",
   "Vises øverst på sidene, i fanetittelen, i SMS-er til kunder og i kalenderinvitasjonen.": "Shown at the top of every page, in the browser tab, in texts to customers and in the calendar invite.",
   "Navn": "Name",
@@ -435,5 +435,11 @@
   "Bruk 1-40 tegn, uten < og >.": "Use 1-40 characters, without < and >.",
   "Se hvor vi holder til, og få veibeskrivelse i Google Maps.": "See where we are and get directions in Google Maps.",
   "Kunne ikke lagre navnet.": "Could not save the name.",
-  "Dagens grense på 100 SMS er nådd. Nye SMS sendes ikke før i morgen, men bestillinger fungerer som vanlig.": "Today's limit of 100 texts has been reached. No more texts are sent until tomorrow, but bookings work as usual."
+  "Dagens grense på 100 SMS er nådd. Nye SMS sendes ikke før i morgen, men bestillinger fungerer som vanlig.": "Today's limit of 100 texts has been reached. No more texts are sent until tomorrow, but bookings work as usual.",
+  "Personvernerklæring": "Privacy notice",
+  "Vi bruker navn og telefonnummer bare til å gjennomføre bestillingen og sende SMS om timen.": "We only use your name and phone number to complete the booking and send texts about your appointment.",
+  "Les om personvern": "Read about privacy",
+  "Anonymisert": "Anonymised",
+  "Personopplysninger slettet": "Personal data deleted",
+  "Personvern": "Privacy"
 }

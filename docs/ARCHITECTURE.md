@@ -533,6 +533,8 @@ Customer booking data contains personal information, particularly:
 
 Direct anonymous database access to booking records is not part of the architecture.
 
+Retention: `cleanupPersonalData()` in `lib/retention.ts` blanks `name`, `phone` and `status_code` on bookings older than `PERSONAL_DATA_RETENTION_DAYS` (90) after the appointment, keeping date, services and price for statistics. It also deletes expired `attempts` rows. It runs opportunistically on new bookings and on work-list loads, with no cron. Anonymised bookings must never be given a new booking code. The periods live in `lib/retention-policy.ts` and are shown on `/personvern`, so the published notice always matches the code. Change both together.
+
 ---
 
 ## 12. Persistence

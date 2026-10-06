@@ -1,7 +1,8 @@
 'use client';
 import styles from './status.module.css';
 import {useEffect,useState,useRef} from 'react';
-import {useLanguage,LanguagePicker} from '@/components/language';
+import {useLanguage} from '@/components/language';
+import {SiteHeader} from '@/components/site-header';
 import {washStatuses} from '@/lib/wash-status';
 import {dateLabel,timeLabel} from '@/lib/schedule';
 export default function Status(){
@@ -35,7 +36,7 @@ export default function Status(){
   window.history.replaceState(null,'',window.location.pathname+window.location.search);
   void search({lookup:linkLookup,code:linkCode});
  },[enabled]);
- return <><header><div className="header-identity"><a href="/"><img className="yn-logo" src="/yn-vekst-logo.svg" width="174" height="55" alt="Ytre Namdal Vekst"/></a><a className="brand" href="/">Steam</a></div><div className="header-tools"><LanguagePicker/></div></header>
+ return <><SiteHeader statusEnabled current="status"/>
  <main className={styles.page}><section className={styles.hero}>
  <div className={styles.eyebrow}>{t('DIN NESTE BILVASK')}</div><h1>{t('Vaskestatus')}</h1><p className={styles.intro}>{t('Følg bilen din fra bestilt til ferdig.')}</p>
  <a className={styles.back} href="/">← {t('Tilbake til bestilling')}</a></section><section className={styles.card} aria-label={t('Sjekk status')}>

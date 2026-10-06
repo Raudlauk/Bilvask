@@ -9,6 +9,9 @@
 .bookingDesign :global(.slide-navigation){display:flex;justify-content:space-between;gap:16px;margin-top:24px}
 .bookingDesign :global(.slide-navigation .primary){margin-left:auto;padding:12px 24px}
 .bookingDesign :global(.slide-navigation .secondary){padding:12px 20px;min-height:52px;border:1px solid #b8cbc5;border-radius:8px;color:#163d46}
+.bookingDesign :global(.step-total){display:none}
+.bookingDesign :global(.calendar button.fully-booked:disabled){display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:6px 0;text-decoration:none;color:#7a5a2c;background:repeating-linear-gradient(135deg,#f3ede2 0 4px,#f8f4ec 4px 8px);box-shadow:inset 0 0 0 1px #e2d5bd}
+.bookingDesign :global(.calendar button.fully-booked small){font-size:10px;font-weight:600;line-height:1;letter-spacing:.02em}
 .bookingDesign :global(.booking-slide .customer-details-heading){margin-top:0;padding-top:0;border-top:0}
 
 /* Shared public booking design. */
@@ -107,6 +110,13 @@
  .bookingDesign :global(.booking-option){grid-template-columns:18px minmax(0,1fr)}
  .bookingDesign :global(.booking-option .option-meta){grid-column:2;text-align:left;display:flex;flex-wrap:wrap;gap:8px 14px}
  .bookingDesign :global(.booking-option .option-meta small){margin:0}
+ .bookingDesign :global(.slide-navigation.step-bar){position:sticky;bottom:0;z-index:5;align-items:center;gap:12px;margin:24px -18px 0;padding:12px 18px calc(12px + env(safe-area-inset-bottom));background:var(--preview-paper);border-top:1px solid var(--preview-line);box-shadow:0 -12px 20px -16px rgba(16,60,71,.45)}
+ .bookingDesign :global(.step-bar .step-total){display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;margin:0;line-height:1.2}
+ .bookingDesign :global(.step-bar .secondary+.step-total){align-items:center;text-align:center}
+ .bookingDesign :global(.step-total strong){font-size:18px;font-weight:700;color:#163d46;letter-spacing:-.01em;white-space:nowrap}
+ .bookingDesign :global(.step-total span){font-size:13px;color:#526d6f;white-space:nowrap}
+ .bookingDesign :global(.step-bar .primary){margin-left:0;flex:none;padding:12px 20px}
+ .bookingDesign :global(.step-bar .secondary){flex:none;padding:12px 14px}
  .bookingDesign :global(footer){padding:32px 20px 24px;gap:32px}
  .bookingDesign :global(footer>div:first-child){padding:24px}
 }

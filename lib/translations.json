@@ -375,5 +375,12 @@
   "Bestillingstrinn": "Booking steps",
   "Neste": "Next",
   "Tilbake": "Back",
-  "Tidspunktet er ikke lenger tilgjengelig. Velg et nytt tidspunkt.": "The selected time is no longer available. Choose a new time."
+  "Tidspunktet er ikke lenger tilgjengelig. Velg et nytt tidspunkt.": "The selected time is no longer available. Choose a new time.",
+  "Fant ikke siden": "Page not found",
+  "Glemt passord": "Forgot password",
+  "Designforhåndsvisning": "Design preview",
+  "Hovedmeny": "Main menu",
+  "Fullt": "Full",
+  "Datoer merket «Fullt» har ingen ledige tider igjen.": "Dates marked “Full” have no times left.",
+  "Siden finnes ikke, eller den er flyttet.": "This page does not exist, or it has moved."
 }

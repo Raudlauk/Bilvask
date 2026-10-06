@@ -1,9 +1,10 @@
 'use client';
 import {SiteFooter} from '@/components/site-footer';
+import {SiteHeader} from '@/components/site-header';
 import styles from '@/components/booking-design.module.css';
 import {normalizePhoneInput} from '@/lib/phone-input';
 import {bookingTotal,servicePrice,emptyPrices,money,type Prices} from '@/lib/prices';
-import { useLanguage, LanguagePicker } from '@/components/language';
+import { useLanguage } from '@/components/language';
 import { useState, useEffect, useRef } from 'react';
 import { today, blocked, washDuration, timeLabel, dateLabel } from '@/lib/schedule';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -37,22 +38,15 @@ export default function Home({ slideBooking = true }: { slideBooking?: boolean }
   const [fluid,setFluid]=useState(false),[prices,setPrices]=useState<Prices>(emptyPrices),[priceReady,setPriceReady]=useState(false),[priceError,setPriceError]=useState(''),[priceRevision,setPriceRevision]=useState(0);
   useEffect(()=>{if(!inside&&!outside){setFluid(false);setLargeCar(false)}},[inside,outside]);
   useEffect(()=>{const controller=new AbortController();setPriceReady(false);setPriceError('');fetch('/api/prices',{signal:controller.signal}).then(async r=>{if(!r.ok)throw new Error('Kunne ikke hente prisene.');setPrices(await r.json() as Prices);setPriceReady(true)}).catch(e=>{if(!controller.signal.aborted)setPriceError(e.message)});return()=>controller.abort()},[priceRevision]);
-  const [schedule,setSchedule]=useState({insideMinutes:30,outsideMinutes:30,weekdays:44,statusEnabled:false,largeCarPercent:0,polishEnabled:false,polishMinutes:60,polishPrice:null as number|null}),[scheduleReady,setScheduleReady]=useState(false),[scheduleError,setScheduleError]=useState('');
-  useEffect(()=>{const controller=new AbortController();async function refresh(){try{const r=await fetch('/api/booking-settings',{signal:controller.signal});if(!r.ok)throw new Error();const data=await r.json() as {insideMinutes:number;outsideMinutes:number;weekdays:number;statusEnabled:boolean;largeCarPercent:number;polishEnabled:boolean;polishMinutes:number;polishPrice:number|null};setSchedule(data);setScheduleReady(true);setScheduleError('')}catch{if(!controller.signal.aborted){setScheduleReady(false);setScheduleError('Kunne ikke hente bestillingsinnstillingene.')}}}void refresh();const timer=setInterval(()=>void refresh(),30000);window.addEventListener('focus',refresh);return()=>{controller.abort();clearInterval(timer);window.removeEventListener('focus',refresh)}},[priceRevision]);
+  const [schedule,setSchedule]=useState({insideMinutes:30,outsideMinutes:30,weekdays:44,statusEnabled:false,largeCarPercent:0,polishEnabled:false,polishMinutes:60,polishPrice:null as number|null,mapsUrl:''}),[scheduleReady,setScheduleReady]=useState(false),[scheduleError,setScheduleError]=useState('');
+  useEffect(()=>{const controller=new AbortController();async function refresh(){try{const r=await fetch('/api/booking-settings',{signal:controller.signal});if(!r.ok)throw new Error();const data=await r.json() as {insideMinutes:number;outsideMinutes:number;weekdays:number;statusEnabled:boolean;largeCarPercent:number;polishEnabled:boolean;polishMinutes:number;polishPrice:number|null;mapsUrl:string};setSchedule(data);setScheduleReady(true);setScheduleError('')}catch{if(!controller.signal.aborted){setScheduleReady(false);setScheduleError('Kunne ikke hente bestillingsinnstillingene.')}}}void refresh();const timer=setInterval(()=>void refresh(),30000);window.addEventListener('focus',refresh);return()=>{controller.abort();clearInterval(timer);window.removeEventListener('focus',refresh)}},[priceRevision]);
   const weekdayText=scheduleReady?([1,2,3,4,5,6,0].filter(d=>schedule.weekdays&(1<<d)).map(d=>new Date(Date.UTC(2026,0,4+d)).toLocaleDateString(language==='nb'?'nb-NO':'en-GB',{weekday:'long',timeZone:'UTC'})).join(', ')||t('Ingen åpne bestillingsdager.')):t('Laster innstillinger…');
   useEffect(()=>{if(!schedule.polishEnabled||!outside)setPolish(false)},[schedule.polishEnabled,outside]);
   const selectedPolish=polish&&schedule.polishEnabled&&outside;
   const price=bookingTotal(prices,inside,outside,fluid,selectedPolish,schedule.polishPrice,largeCar,schedule.largeCarPercent);
   return (
     <div className={styles.bookingDesign}>
-      <header>
-<div className="header-identity"><a href="https://ynvekst.no/" aria-label="Ytre Namdal Vekst"><img className="yn-logo" src="/yn-vekst-logo.svg" width="174" height="55" alt="Ytre Namdal Vekst" /></a>
-        <a className="brand" href="/">
-          <Droplets /> Steam<span>{t("BILVASK")}</span>
-        </a>
-        </div><div className="header-tools booking-header-tools"><LanguagePicker /><nav className="header-navigation">{schedule.statusEnabled&&<a className="worker-link status-link" href="/status">{t('Vaskestatus')}</a>}<a className="worker-link" href="/admin"> {t("Ansattinnlogging")}
-        </a>
-      </nav></div></header>
+      <SiteHeader statusEnabled={schedule.statusEnabled} />
       <main>
         <div className="intro booking-intro">
           <h1>{t('Bestill bilvask')}</h1>
@@ -115,7 +109,7 @@ export default function Home({ slideBooking = true }: { slideBooking?: boolean }
             <label className={'booking-option'+(fluid?' selected':'')+(!inside&&!outside?' unavailable':'')}><Checkbox aria-label={t('Påfyll av spylervæske')} checked={fluid} disabled={!inside&&!outside} onCheckedChange={value=>setFluid(value && (inside||outside))}/><span className="option-copy"><strong>{t('Påfyll av spylervæske')}</strong><small>{t('Kun sammen med bilvask. Ingen ekstra tid.')}</small></span><span className="option-meta"><strong>{priceReady?(prices.fluid==null?t('Pris avtales'):money(prices.fluid,language)):t('Henter priser…')}</strong></span></label>
             </div>
             {priceError&&<p className="error" role="alert">{t(priceError)} <button className="secondary" onClick={()=>setPriceRevision(v=>v+1)}>{t('Prøv igjen.')}</button></p>}
-            {slideBooking && <div className="slide-navigation"><button type="button" className="primary" disabled={!inside && !outside} onClick={()=>setStep(2)}>{t('Neste')} →</button></div>}
+            {slideBooking && <div className="slide-navigation step-bar"><StepTotal empty={!inside && !outside} price={price} priceReady={priceReady} duration={washDuration(schedule,inside,outside,largeCar,selectedPolish)} scheduleReady={scheduleReady}/><button type="button" className="primary" disabled={!inside && !outside} onClick={()=>setStep(2)}>{t('Neste')} →</button></div>}
             </div>
             <div className="booking-slide" hidden={slideBooking && step !== 2}>
             <div className="section-title">
@@ -168,9 +162,15 @@ export default function Home({ slideBooking = true }: { slideBooking?: boolean }
           </aside>
         </div>
       </main>
-      <SiteFooter />
+      <SiteFooter mapsUrl={schedule.mapsUrl} />
     </div>
   );
+}
+// Running total for the phone step bar; desktop shows the summary sidebar instead.
+function StepTotal({empty=false,price,priceReady,duration,scheduleReady}:{empty?:boolean;price:number|null;priceReady:boolean;duration:number;scheduleReady:boolean}){
+ const {t,language}=useLanguage();
+ if(empty)return <p className="step-total"><span>{t('Velg vask')}</span></p>;
+ return <p className="step-total"><strong>{priceReady?(price===null?t('Pris avtales'):money(price,language)):t('Henter priser…')}</strong><span>{scheduleReady?`${duration} ${t('minutter')}`:t('Laster…')}</span></p>;
 }
 function Booking({ slideBooking,step,setStep,inside, outside,fluid,price,priceReady,refreshPrices,schedule,scheduleReady,largeCar,polish }: {slideBooking:boolean;step:number;setStep:(step:number)=>void;polish:boolean;largeCar:boolean;schedule:{insideMinutes:number;outsideMinutes:number;weekdays:number;statusEnabled:boolean;largeCarPercent:number;polishEnabled:boolean;polishMinutes:number;polishPrice:number|null};scheduleReady:boolean; inside: boolean; outside: boolean;fluid:boolean;price:number|null;priceReady:boolean;refreshPrices:()=>void }) {
  const {t,language}=useLanguage();
@@ -197,6 +197,8 @@ function Booking({ slideBooking,step,setStep,inside, outside,fluid,price,priceRe
     if(date && duration && scheduleReady && !blocked(date,schedule.weekdays))setError('');
   },[date,duration,revision,schedule.weekdays,scheduleReady]);
   useEffect(()=>{
+    // Duration depends on the loaded settings; fetching earlier only repeats the request once they arrive.
+    if(!scheduleReady)return;
     const controller=new AbortController();let pending=false;
     async function refresh(){if(pending)return;pending=true;try{
       const canFetchSlots=!!date && !!duration && scheduleReady && !blocked(date,schedule.weekdays);
@@ -328,15 +330,16 @@ function Booking({ slideBooking,step,setStep,inside, outside,fluid,price,priceRe
         ))}
         {Array.from({ length: days }, (_, i) => {
           const d = month + '-' + String(i + 1).padStart(2, '0');
+          const full = d >= today() && !closedDates.includes(d) && !(scheduleReady && blocked(d, schedule.weekdays)) && !(maxDate && d > maxDate) && fullDates.includes(d);
           const reason = d < today() ? t('Datoen er passert')
             : closedDates.includes(d) || (scheduleReady && blocked(d, schedule.weekdays)) ? t('Stengt')
             : maxDate && d > maxDate ? t('Utenfor bestillingsperioden')
-            : fullDates.includes(d) ? t('Fullbooket') : '';
+            : full ? t('Fullbooket') : '';
           return (
             <button
               type="button"
               key={d}
-              className={fullDates.includes(d) ? 'fully-booked' : date === d ? 'active' : ''}
+              className={full ? 'fully-booked' : date === d ? 'active' : ''}
               disabled={!scheduleReady || !maxDate || d > maxDate || d < today() || blocked(d,schedule.weekdays) || closedDates.includes(d) || fullDates.includes(d) || calendarMonth!==month || !!calendarError}
               aria-pressed={date === d}
               aria-label={dateLabel(d, language) + (reason ? ', ' + reason : '')}
@@ -344,11 +347,12 @@ function Booking({ slideBooking,step,setStep,inside, outside,fluid,price,priceRe
               onClick={() => setDate(d)}
             >
               {i + 1}
+              {full && <small aria-hidden="true">{t('Fullt')}</small>}
             </button>
           );
         })}
       </div>
-      <p className="calendar-legend muted">{t('Overstrøkne datoer kan ikke bestilles. Ledige tider avhenger av hvilke tjenester du velger og hvor lang tid de tar.')}</p>
+      <p className="calendar-legend muted">{t('Overstrøkne datoer kan ikke bestilles. Ledige tider avhenger av hvilke tjenester du velger og hvor lang tid de tar.')}{fullDates.length > 0 && calendarMonth === month && <> {t('Datoer merket «Fullt» har ingen ledige tider igjen.')}</>}</p>
       {maxDate && <p className="muted">{t('Du kan bestille til og med')} {dateLabel(maxDate, language)}.</p>}
       {calendarError&&<p role="alert" className="error">{t(calendarError)} <button type="button" className="secondary" onClick={()=>setRevision(r=>r+1)}>{t('Prøv igjen.')}</button></p>}
       <p className="muted calendar-caption">
@@ -379,7 +383,7 @@ function Booking({ slideBooking,step,setStep,inside, outside,fluid,price,priceRe
       {!duration && (
         <p className="notice">{t("Velg minst én tjeneste for å se ledige tider.")}</p>
       )}
-      {slideBooking && <div className="slide-navigation"><button type="button" className="secondary" onClick={()=>setStep(1)}>← {t('Tilbake')}</button><button type="button" className="primary" disabled={!validTime} onClick={()=>setStep(3)}>{t('Neste')} →</button></div>}
+      {slideBooking && <div className="slide-navigation step-bar"><button type="button" className="secondary" onClick={()=>setStep(1)}>← {t('Tilbake')}</button><StepTotal price={price} priceReady={priceReady} duration={duration} scheduleReady={scheduleReady}/><button type="button" className="primary" disabled={!validTime} onClick={()=>setStep(3)}>{t('Neste')} →</button></div>}
       </div>
       <div className="booking-slide" hidden={slideBooking && step !== 3}>
       <div className="section-title customer-details-heading">

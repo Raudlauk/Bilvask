@@ -32,6 +32,7 @@ Start here, then load deeper documentation only when needed:
 - Closed-date and weekday configuration
 - Customer confirmation page
 - Customer wash-status lookup
+- Optional customer self-service: move or cancel a booking from Vaskestatus with phone number and booking code (until 2 hours before; staff see changes in the work list)
 - Administrator dashboard
 - Read-only / limited worker accounts
 - Appointment date/time changes

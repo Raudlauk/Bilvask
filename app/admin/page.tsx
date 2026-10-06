@@ -30,7 +30,9 @@ type Job = { status:number;
   outside: number;
   fluid:number;
   price:number|null;
+  customer_moves?:number;
 };
+type CustomerChange={id:string;action:'moved'|'cancelled';name:string;phone:string;old_date:string;old_start:number;new_date:string|null;new_start:number|null;created:number};
 export default function Admin() {
  const {t,language}=useLanguage();
  const activeRequest = useRef<AbortController | null>(null);
@@ -56,6 +58,7 @@ export default function Admin() {
     [password, setPassword] = useState(''),
     [date, setDate] = useState(''),
     [jobs, setJobs] = useState<Job[]>([]),
+    [customerChanges, setCustomerChanges] = useState<CustomerChange[]>([]),
     [error, setError] = useState(''),
     [message, setMessage] = useState(''),
     [busy, setBusy] = useState(false),
@@ -74,7 +77,7 @@ export default function Admin() {
       const b = (await r.json()) as {
         error?: string;
         username: string;
-        bookings: Job[];statusEnabled:boolean;
+        bookings: Job[];statusEnabled:boolean;customerChanges?:CustomerChange[];
         requiresPasswordChange?: boolean;
         role:'admin'|'viewer'|'manager';
       };
@@ -82,6 +85,7 @@ export default function Admin() {
         setLogged(false);
         return;
       }
+      setCustomerChanges(r.ok ? b.customerChanges ?? [] : []);
       if (!r.ok) throw new Error(b.error);
       setStatusEnabled(b.statusEnabled);setRole(b.role);
       if(b.role==='viewer'){setCancelJob(null);setDurationJob(null);setRescheduleJob(null);}
@@ -336,6 +340,15 @@ export default function Admin() {
                     <RefreshCw size={18} />
                   </button>
                 </div>
+                {customerChanges.length>0&&<section className="panel customer-changes" aria-labelledby="customer-changes-title">
+                  <h2 id="customer-changes-title">{t('Endringer fra kunder')} <small className="muted">{t('siste 7 dager')}</small></h2>
+                  <ul>{customerChanges.map(c=><li key={c.id} className={c.action}>
+                    <strong>{c.action==='cancelled'?t('Avbestilt av kunde'):t('Flyttet av kunde')}</strong>
+                    <span>{c.name} · <a href={'tel:'+c.phone.replace(/[^+\d]/g,'')}>{c.phone}</a></span>
+                    <span>{dateLabel(c.old_date,language)} {timeLabel(c.old_start)}{c.action==='moved'&&c.new_date&&c.new_start!=null&&<> → {dateLabel(c.new_date,language)} {timeLabel(c.new_start)}</>}</span>
+                    <small className="muted">{new Date(c.created).toLocaleString(language==='nb'?'nb-NO':'en-GB',{timeZone:'Europe/Oslo',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</small>
+                  </li>)}</ul>
+                </section>}
                 <div className="schedule-summary"><strong>{date ? dateLabel(date, language) : t("Kommende bestillinger")}</strong><span>{jobs.length} {jobs.length === 1 ? t("bilvask") : t("bilvasker")} · {jobs.reduce((n, j) => n + j.duration, 0)} {t("minutter")}</span></div>
                 {checking ? (
                   <p role="status">{t("Oppdaterer arbeidslisten…")}</p>
@@ -349,6 +362,7 @@ export default function Admin() {
                         </div>
                         <div>
                           <h3>{j.name}</h3>
+                          {(j.customer_moves??0)>0&&<p className="customer-moved-tag">{t('Flyttet av kunde')}</p>}
                           <p>
                             {j.inside && j.outside
                               ? t("Innvendig og utvendig vask")

@@ -14,8 +14,8 @@ import {
   sessionToken,
   throttle,
 } from '@/lib/server';
-import { available, validDate } from '@/lib/schedule';
-import { cancelReminder, scheduleReminder, sendBookingCancelled, sendBookingChanged } from '@/lib/link-sms';
+import { validDate } from '@/lib/schedule';
+import { cancelBooking, moveBooking } from '@/lib/booking-changes';
 export async function GET(req: Request) {
   try {
     const user = await currentUser(req);
@@ -40,7 +40,8 @@ export async function GET(req: Request) {
     for(const row of rows.results){
       if(!row.status_code)row.status_code=await bookingCode(row.id);
     }
-    return json({ statusEnabled:(await getBookingSettings()).statusEnabled,username: user.username, role:user.role, bookings: rows.results });
+    const customerChanges=(await db().prepare('SELECT id,action,name,phone,old_date,old_start,new_date,new_start,created FROM booking_changes WHERE created>? ORDER BY created DESC LIMIT 20').bind(Date.now()-7*86400000).all()).results;
+    return json({ statusEnabled:(await getBookingSettings()).statusEnabled,username: user.username, role:user.role, bookings: rows.results, customerChanges });
   } catch (error) {
     if(error instanceof SyntaxError)return json({error: 'Ugyldig forespørsel.'},400);
     return json({ error: 'Kunne ikke laste arbeidslisten. Prøv igjen.' }, 503);
@@ -106,25 +107,13 @@ export async function POST(req: Request) {
       const booking=await db().prepare('SELECT id,name,phone,date,start,duration FROM bookings WHERE id=?').bind(b.id).first<{id:string;name:string;phone:string;date:string;start:number;duration:number}>();
       if(!booking)return json({error:'Bestillingen finnes ikke lenger. Oppdater arbeidslisten.'},404);
       if(booking.date!==b.expectedDate||booking.start!==b.expectedStart)return json({error:'Bestillingen er endret. Oppdater arbeidslisten og prøv igjen.'},409);
-      const settings=await getBookingSettings();
-      if(b.date>settings.maxDate)return json({error:'Datoen er utenfor bestillingsperioden. Velg en tidligere dato.'},409);
-      const busy=(await db().prepare('SELECT start,duration FROM bookings WHERE date=? AND id<>? ORDER BY start').bind(b.date,b.id).all<{start:number;duration:number}>()).results;
-      if(!available(b.date,booking.duration,busy,settings.weekdays).includes(b.start))return json({error:'Tidspunktet er ikke ledig, er utenfor åpningstid eller overlapper pausen.'},409);
-      const result=await db().prepare(`UPDATE bookings SET date=?1,start=?2 WHERE id=?3 AND date=?4 AND start=?5
-        AND NOT EXISTS (SELECT 1 FROM bookings other WHERE other.id<>?3 AND other.date=?1 AND other.start<?2+bookings.duration AND other.start+other.duration>?2)
-        AND (SELECT COUNT(*) FROM bookings other WHERE other.id<>?3 AND other.date=?1)<4
-        AND (SELECT COUNT(*) FROM bookings other WHERE other.id<>?3 AND other.date=?1 AND other.start>=?6 AND other.start<?7)<2
-        AND NOT EXISTS (SELECT 1 FROM closed_dates WHERE date=?1)`)
-        .bind(b.date,b.start,b.id,b.expectedDate,b.expectedStart,b.start<720?0:720,b.start<720?720:1440).run();
-      if(!result.meta.changes)return json({error:'Tidspunktet ble opptatt eller bestillingen ble endret. Oppdater arbeidslisten og prøv igjen.'},409);
-      const moved={...booking,date:b.date,start:b.start};
-      const smsResults=await Promise.allSettled([
-        (async()=>{await cancelReminder(booking.id);return scheduleReminder(moved)})(),
-        sendBookingChanged(moved,{date:booking.date,start:booking.start}),
-      ]);
-      const smsWarning=smsResults.some(result=>result.status==='rejected');
-      for(const result of smsResults)if(result.status==='rejected')console.error('Reschedule SMS failed',result.reason);
-      return json({ok:true,...(smsWarning?{smsWarning:'Timen er flyttet, men én eller flere SMS-meldinger kunne ikke oppdateres/sendes.'}:{})});
+      const moved=await moveBooking(booking,b.date,b.start,'staff');
+      if(!moved.ok)return json({error:{
+        'outside-period':'Datoen er utenfor bestillingsperioden. Velg en tidligere dato.',
+        unavailable:'Tidspunktet er ikke ledig, er utenfor åpningstid eller overlapper pausen.',
+        conflict:'Tidspunktet ble opptatt eller bestillingen ble endret. Oppdater arbeidslisten og prøv igjen.',
+      }[moved.reason]},409);
+      return json({ok:true,...(moved.smsWarning?{smsWarning:'Timen er flyttet, men én eller flere SMS-meldinger kunne ikke oppdateres/sendes.'}:{})});
     }
     if (b.action === 'duration') {
       if(typeof b.id!=='string'||!/^[a-f0-9-]{36}$/.test(b.id)||typeof b.duration!=='number'||!Number.isInteger(b.duration)||b.duration<15||b.duration>240||b.duration%15!==0||typeof b.expectedDuration!=='number')
@@ -141,14 +130,9 @@ export async function POST(req: Request) {
       if(typeof b.id!=='string'||!/^[a-f0-9-]{36}$/.test(b.id))return json({error:'Ugyldig bestilling.'},400);
       const booking=await db().prepare('SELECT id,name,phone,date,start,duration FROM bookings WHERE id=?').bind(b.id).first<{id:string;name:string;phone:string;date:string;start:number;duration:number}>();
       if(!booking)return json({error:'Bestillingen er allerede fjernet. Oppdater arbeidslisten.'},404);
-      let reminderWarning=false;
-      try{await cancelReminder(booking.id)}catch(error){reminderWarning=true;console.error('Reminder cancellation failed',error)}
-      const result=await db().prepare('DELETE FROM bookings WHERE id=?').bind(b.id).run();
-      if(!result.meta.changes)return json({error:'Bestillingen er allerede fjernet. Oppdater arbeidslisten.'},404);
-      let cancelSmsWarning=false;
-      try{await sendBookingCancelled(booking)}catch(error){cancelSmsWarning=true;console.error('Cancellation SMS failed',error)}
-      const smsWarning=reminderWarning||cancelSmsWarning;
-      return json({ok:true,...(smsWarning?{smsWarning:'Bestillingen er avbestilt, men én eller flere SMS-meldinger kunne ikke oppdateres/sendes.'}:{})});
+      const cancelled=await cancelBooking(booking,'staff');
+      if(!cancelled.ok)return json({error:'Bestillingen er allerede fjernet. Oppdater arbeidslisten.'},404);
+      return json({ok:true,...(cancelled.smsWarning?{smsWarning:'Bestillingen er avbestilt, men én eller flere SMS-meldinger kunne ikke oppdateres/sendes.'}:{})});
     }
     if(user.role!=='admin')return json({error:'Kun administrator har tilgang.'},403);
     if (b.action === 'credentials') {

@@ -9,6 +9,7 @@ export const bookingSettings = sqliteTable('booking_settings', {
   outsideMinutes: integer('outside_minutes').notNull().default(30),
   weekdays: integer('weekdays').notNull().default(44),
   mapsUrl: text('maps_url').notNull().default('https://maps.app.goo.gl/eLbrjaFsUCS2t9VNA'),
+  customerChanges: integer('customer_changes').notNull().default(0),
 });
 export const prices=sqliteTable('prices',{id:integer('id').primaryKey(),inside:integer('inside'),outside:integer('outside'),fluid:integer('fluid')});
 export const contact = sqliteTable('contact', {
@@ -37,8 +38,27 @@ export const bookings = sqliteTable(
     largeCar: integer('large_car').notNull().default(0),
     polish: integer('polish').notNull().default(0),
     price: integer('price'),
+    customerMoves: integer('customer_moves').notNull().default(0),
+    customerChangedAt: integer('customer_changed_at'),
   },
   (t) => [index('idx_bookings_date_start').on(t.date, t.start)],
+);
+// Customer self-service log so staff see moves and cancellations (pruned after 30 days).
+export const bookingChanges = sqliteTable(
+  'booking_changes',
+  {
+    id: text('id').primaryKey(),
+    bookingId: text('booking_id').notNull(),
+    action: text('action', { enum: ['moved', 'cancelled'] }).notNull(),
+    name: text('name').notNull(),
+    phone: text('phone').notNull(),
+    oldDate: text('old_date').notNull(),
+    oldStart: integer('old_start').notNull(),
+    newDate: text('new_date'),
+    newStart: integer('new_start'),
+    created: integer('created').notNull(),
+  },
+  (t) => [index('idx_booking_changes_created').on(t.created)],
 );
 export const admins = sqliteTable('admins', {
   id: integer('id').primaryKey(),

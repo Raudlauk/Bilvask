@@ -34,6 +34,34 @@
 .steps li[aria-current=step]>span{background:#163d46;border-color:#163d46;color:#f6f8f5}
 .appointment{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px;border-top:1px solid #cddbd9;padding-top:20px;font-size:15px}
 .appointment strong{font-size:24px;font-variant-numeric:tabular-nums}
+/* Customer move/cancel (components/customer-booking-change.tsx) */
+.card :global(.customer-change){display:grid;gap:16px;margin-top:24px;padding-top:24px;border-top:1px solid #cddbd9}
+.card :global(.customer-change h3){margin:0;font-size:18px;letter-spacing:-.2px}
+.card :global(.customer-change p){margin:0;line-height:1.6}
+.card :global(.customer-change label){display:grid;gap:10px;font-size:14px;font-weight:600}
+.card :global(.customer-change input),.card :global(.customer-change select){width:100%;min-width:0;min-height:52px;padding:13px 14px;background:#fff;border:1px solid #b7cdca;border-radius:8px;color:#163d46;font:inherit;font-weight:400}
+.card :global(.customer-change input:focus),.card :global(.customer-change select:focus){border-color:#163d46;box-shadow:inset 0 0 0 1px #163d46;outline:none}
+.card :global(.customer-move),.card :global(.customer-change form){display:grid;gap:16px}
+.card :global(.customer-change h3){font-weight:600}
+.card :global(.customer-change .slots){grid-template-columns:repeat(3,minmax(0,1fr));margin:0}
+.card :global(.customer-change .slot){min-height:44px;border-color:#b7cdca;color:#163d46;font-weight:600;font-variant-numeric:tabular-nums}
+.card :global(.customer-change .slot.active){background:#163d46;border-color:#163d46;color:#fff}
+.card :global(.customer-change .primary){min-height:52px;padding:12px 20px;border:0;border-radius:8px;background:#d4e775;color:#163d46;font-weight:700}
+.card :global(.customer-change .primary:hover:not(:disabled)){background:#c7dc61}
+.card :global(.customer-change .primary.cancel-booking){background:#a12924;color:#fff}
+.card :global(.customer-change .secondary){min-height:48px;padding:12px 18px;border:1px solid #b8cbc5;border-radius:8px;background:transparent;color:#163d46;font-weight:600;justify-self:start}
+.card :global(.customer-change .secondary.cancel-booking){color:#a12924;border-color:#e2c3bf}
+.card :global(.customer-change .text-button){justify-self:start;min-height:44px;padding:8px 0;border:0;background:none;color:#163d46;text-decoration:underline;text-underline-offset:4px}
+.card :global(.customer-change .notice){padding:12px 16px;border-radius:8px;background:#e6ece8;color:#37554e}
+.card :global(.customer-change .notice a){color:inherit;font-weight:700;white-space:nowrap}
+.card :global(.customer-change .success){padding:12px 16px;border-radius:8px;background:#e4eddf;color:#163d46}
+.card :global(.customer-change .error){color:#a12924}
+.card :global(.customer-cancel-confirm){padding:16px;border-radius:8px;background:#fbeeec}
+.card :global(.customer-cancel-confirm p){margin-bottom:12px}
+.card :global(.customer-change button:focus-visible),.card :global(.customer-change a:focus-visible){outline:3px solid #f47821;outline-offset:3px}
+.cancelled{margin-top:32px;padding:20px;border-radius:12px;background:#e4eddf;line-height:1.6}
+.cancelled strong{display:block;font-size:20px;margin-bottom:4px}
+@media(max-width:420px){.card :global(.customer-change .slots){grid-template-columns:repeat(2,minmax(0,1fr))}}
 @keyframes resultIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:1024px){.page{gap:40px}.hero h1{font-size:52px}}
 @media(max-width:767px){.page{grid-template-columns:1fr;gap:28px;padding:32px 16px 48px}.hero{padding:0}.hero h1{font-size:44px;margin:16px 0}.intro{font-size:16px;max-width:none}.back{margin-top:16px}.card{padding:24px 20px}.card h2{margin-bottom:24px}}

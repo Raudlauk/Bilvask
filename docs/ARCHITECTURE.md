@@ -388,6 +388,22 @@ Database state is authoritative.
 
 External notification failure should be reported separately.
 
+Staff and customer moves and cancellations share `moveBooking` and `cancelBooking` in `lib/booking-changes.ts`, so both paths keep the same atomic conflict checks and SMS reminder handling.
+
+### Customer self-service changes
+
+When enabled in admin (Vaskestatus settings, off by default, and only while status is enabled), customers can move or cancel their own booking from `/status` through `POST /api/customer-booking`.
+
+Rules, enforced server-side:
+
+- the booking is identified by **phone number and booking code**; a name is not enough
+- no changes less than **2 hours** before the appointment (`CUSTOMER_CUTOFF_MINUTES`), and only while status is `0` (booked, not started)
+- a new time must also be at least 2 hours ahead
+- at most **3** customer moves per booking (`CUSTOMER_MAX_MOVES`); cancelling stays possible
+- the move counter and status are checked inside the same atomic `UPDATE`/`DELETE` as the slot conflict checks
+
+Staff visibility: moved bookings carry `customer_moves`/`customer_changed_at`, and every customer move or cancellation is written to `booking_changes`. The admin work list shows the last 7 days of changes. Rows older than 30 days are pruned when new changes are logged.
+
 ---
 
 ## 9. SMS Architecture

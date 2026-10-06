@@ -120,6 +120,13 @@
       "when": 1790892131000,
       "tag": "0016_tiny_white_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1791276489954,
+      "tag": "0017_customer_changes",
+      "breakpoints": true
     }
   ]
 }

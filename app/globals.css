@@ -907,6 +907,53 @@ input {
   font-weight: 600;
 }
 
+/* Customer self-service changes, shown to staff in the work list. */
+.customer-moved-tag {
+  display: inline-block;
+  margin-top: 8px !important;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #fdf1e3;
+  color: #7a4a12 !important;
+  font-size: 13px;
+  font-weight: 600;
+}
+.customer-changes {
+  margin-bottom: var(--space-4);
+}
+.customer-changes h2 {
+  font-size: 18px;
+  margin: 0 0 12px;
+}
+.customer-changes ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.customer-changes li {
+  display: grid;
+  grid-template-columns: minmax(140px, auto) 1fr 1fr auto;
+  gap: 4px 16px;
+  align-items: baseline;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fdf1e3;
+  font-size: 14px;
+}
+.customer-changes li.cancelled {
+  background: #fbeeec;
+}
+.customer-changes li.cancelled strong {
+  color: #a12924;
+}
+@media (max-width: 720px) {
+  .customer-changes li {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Keep navigation above its panels, independent of the primitive's orientation attributes. */
 .admin-tabs {
   display: flex;

@@ -25,7 +25,8 @@ export function CustomerBookingChange({code,lookup,onMoved,onCancelled}:{code:st
  async function move(){
   if(start===null)return;setBusy(true);setError('');
   try{const data=await call({action:'move',date,start});onMoved(data.date,data.start);setOptions(null);setOpen(false);setNotice(`${t('Timen er flyttet til')} ${dateLabel(data.date,language)} ${t('kl.')} ${timeLabel(data.start)}.`)}
-  catch(e){setError(e instanceof Error?e.message:'Prøv igjen.');void loadOptions()}finally{setBusy(false)}
+  // Refresh the free times, then show why the move failed (loadOptions clears errors).
+  catch(e){const message=e instanceof Error?e.message:'Prøv igjen.';await loadOptions();setError(message)}finally{setBusy(false)}
  }
  async function cancel(){
   setBusy(true);setError('');

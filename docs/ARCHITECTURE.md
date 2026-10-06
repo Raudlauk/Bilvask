@@ -431,27 +431,41 @@ Credentials belong only in server-side environment variables.
 
 Authentication is application-managed rather than Supabase Auth.
 
-Two roles exist:
+Three roles exist:
 
 ```text
 admin
+manager
 viewer
 ```
+
+The single administrator lives in the `admins` table. Manager and viewer accounts live in the `viewers` table, distinguished by its `role` column (default `viewer`). Role resolution is in `currentUser()` in `lib/server.ts`.
 
 ### Admin
 
 May:
 
 - manage bookings
-- change configuration
-- manage users
+- change configuration, prices and contact settings
+- manage users and their access level
 - change appointment date/time
 - change wash duration
+- update wash progress
 - cancel bookings
+
+A freshly bootstrapped admin (`version === 1`) must change the default password before performing booking actions.
+
+### Manager
+
+May read the work list and perform the booking actions `progress`, `reschedule`, `duration` and `cancel-booking` (see `app/api/admin/route.ts`).
+
+May not manage users, settings, prices or credentials.
 
 ### Viewer
 
-May access the operational work list and permitted wash-progress functionality but cannot modify administrator settings.
+Strictly read-only: may read the work list and wash status but cannot perform any mutating action.
+
+Changing a user's access level or activation increments their `version`, which invalidates existing sessions.
 
 Sessions are stored server-side.
 
@@ -768,7 +782,7 @@ Inspect:
 lib/link-sms.ts
 app/api/bookings/route.ts
 app/api/admin/route.ts
-LINK-SMS-SETUP.md
+docs/LINK-SMS-SETUP.md
 ```
 
 ### Database
@@ -796,7 +810,7 @@ Preserve these unless a deliberate architecture change is being made:
 5. Secrets remain server-side.
 6. External notification failures do not corrupt booking state.
 7. Admin mutations use optimistic conflict checks where stale data matters.
-8. Viewer permissions remain strictly narrower than administrator permissions.
+8. Permissions stay strictly ordered: viewer ⊂ manager ⊂ admin.
 9. Oslo local time is the business timezone.
 10. D1 and Supabase must not silently become competing sources of truth.
 

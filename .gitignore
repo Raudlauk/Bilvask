@@ -38,3 +38,7 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+
+# raw font source files (not served; licence restricts redistribution)
+/Synonym/
+/fonts/

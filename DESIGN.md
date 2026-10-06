@@ -10,6 +10,9 @@ The approved font-preview design is the visual authority for the public booking 
 - Panels use 12–16px corners; inputs and buttons use 8px corners.
 - The booking flow has three mounted steps. Selection and form state survive navigation. Desktop transitions reveal the header; mobile transitions reveal the active panel.
 - Keyboard focus remains visible and option focus outlines stay within their rows. Motion respects reduced-motion preferences.
+- All public pages share `components/site-header.tsx` (logo, language, Vaskestatus, Ansattinnlogging). The current page is underlined; Vaskestatus is hidden when status tracking is disabled.
+- On phones (≤720px) the step 1 and 2 navigation is a sticky bottom bar with the running price and duration. Step 3 keeps its inline total above the submit button.
+- In the calendar, fully booked days are distinct from unavailable ones: a warm hatched tile labelled "Fullt" with no strike-through. Strike-through is reserved for closed, past and out-of-range dates.
 
 ## Redesign scope
 

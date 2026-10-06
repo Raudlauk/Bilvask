@@ -16,16 +16,16 @@ Do not assume D1 and Supabase are synchronized.
 
 Start here, then load deeper documentation only when needed:
 
-- [`AGENTS.md`](./AGENTS.md) — agent workflow, model responsibilities, review and verification rules.
-- [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md) — system boundaries, data flow, ownership, invariants, security boundaries, and database migration direction.
-- [`LINK-SMS-SETUP.md`](./LINK-SMS-SETUP.md) — LINK Mobility configuration and reminder behavior.
+- [`AGENTS.md`](./AGENTS.md) — agent instructions: commands, code map, invariants, conventions (loaded by Claude Code via `CLAUDE.md`).
+- [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — system boundaries, data flow, ownership, invariants, security boundaries, and database migration direction.
+- [`docs/LINK-SMS-SETUP.md`](./docs/LINK-SMS-SETUP.md) — LINK Mobility configuration and reminder behavior.
 - [`db/schema.ts`](./db/schema.ts) — current D1/SQLite schema definition.
 - [`drizzle/`](./drizzle/) — generated D1 migration history.
 
 ## Main features
 
 - Public car-wash booking
-- `/` uses the Supreme design and three booking slides; Back/Next retains selections and customer details. `/font-preview` shares the same booking design with a preview banner.
+- `/` uses the Supreme design and three booking slides; Back/Next retains selections and customer details. `/font-preview` shares the same booking design with a preview banner and is available in development only (production returns 404).
 - Availability calculation in the `Europe/Oslo` timezone
 - Configurable service duration and pricing
 - Large-car and polishing options
@@ -88,7 +88,7 @@ lib/
 tests/                     Node regression tests
 ```
 
-See `ARCHITECTURE.md` before making changes that cross these boundaries.
+See `docs/ARCHITECTURE.md` before making changes that cross these boundaries.
 
 ## Prerequisites
 
@@ -181,7 +181,7 @@ LINK_SMS_BEARER_TOKEN=
 
 Confirm the token URL and permitted sender name with the specific LINK Mobility account before production use.
 
-See [`LINK-SMS-SETUP.md`](./LINK-SMS-SETUP.md) for details.
+See [`docs/LINK-SMS-SETUP.md`](./docs/LINK-SMS-SETUP.md) for details.
 
 ## SMS behavior
 
@@ -203,7 +203,10 @@ The project currently uses application-managed authentication rather than Supaba
 Roles:
 
 - `admin` — full administrative access
-- `viewer` — restricted operational access
+- `manager` — reads the work list and changes booking dates, times, durations and wash status; cancels/removes bookings using the existing cancellation flow
+- `viewer` — strictly read-only work list and wash status
+
+Only the administrator manages users, settings, prices and login credentials. New and existing user accounts default to `viewer`; administrators select or edit the access level under user management. Changing access level or activation invalidates existing sessions and requires signing in again. Apply the generated database migration before deploying the updated application.
 
 Sessions are persisted server-side and represented in the browser by an HTTP-only `gleam_session` cookie.
 
@@ -251,7 +254,7 @@ Rescheduling should preserve the booking while replacing the old SMS reminder an
 
 Cancellation should remove the scheduled reminder and send a cancellation notification.
 
-See `ARCHITECTURE.md` for the relevant invariants and flow.
+See `docs/ARCHITECTURE.md` for the relevant invariants and flow.
 
 ## Supabase migration target
 
@@ -400,6 +403,6 @@ Before production deployment, verify:
 
 Read [`AGENTS.md`](./AGENTS.md) before starting implementation work.
 
-For non-trivial changes, also read [`ARCHITECTURE.md`](./ARCHITECTURE.md) and the implementation of the affected subsystem before editing.
+For non-trivial changes, also read [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) and the implementation of the affected subsystem before editing.
 
 Prefer the smallest correct change, preserve existing behavior outside the requested scope, and update this README only when setup, deployment, external integrations, or developer workflow changes.

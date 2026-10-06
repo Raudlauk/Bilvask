@@ -15,7 +15,9 @@ export async function POST(req:Request){
    if(!admin||admin.recovery_email!==email||admin.version===1)return json(generic);
    const token=crypto.randomUUID()+crypto.randomUUID(),hash=await digest(token);
    await db().batch([db().prepare('DELETE FROM password_resets WHERE expires<?').bind(Date.now()),db().prepare('INSERT INTO password_resets (token,email,version,expires) VALUES (?,?,?,?)').bind(hash,email,admin.version,Date.now()+900000)]);
-   try{await sendResetEmail(config,email,token,body.language==='en',hash)}catch{
+   try{await sendResetEmail(config,email,token,body.language==='en',hash)}catch(error){
+    // Server-side only: no address or token, just why delivery failed (see `wrangler tail`).
+    console.error('Password reset email failed:',error instanceof Error?error.message:'unknown error');
     await db().prepare('DELETE FROM password_resets WHERE token=?').bind(hash).run();
     // Keep the response identical for registered and unknown addresses.
     return json(generic);

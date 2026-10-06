@@ -38,10 +38,10 @@ export default function Admin() {
  const [role,setRole]=useState<'admin'|'viewer'|'manager'>('viewer');
  const [requiresPasswordChange,setRequiresPasswordChange]=useState(false);
  const [durationJob,setDurationJob]=useState<Job|null>(null),[editMinutes,setEditMinutes]=useState(''),[durationBusy,setDurationBusy]=useState(false),[durationError,setDurationError]=useState('');
- async function saveDuration(e:React.FormEvent){e.preventDefault();if(!durationJob||role==='viewer')return;setDurationBusy(true);setDurationError('');try{const r=await fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'duration',id:durationJob.id,duration:Number(editMinutes),expectedDuration:durationJob.duration})});const b=await r.json() as {error?:string};if(!r.ok)throw new Error(b.error);setDurationJob(null);setCancelNotice('Vasketiden er oppdatert.');await load()}catch(e){setDurationError(e instanceof Error?e.message:'Prøv igjen.')}finally{setDurationBusy(false)}}
+ async function saveDuration(e:React.SubmitEvent<HTMLFormElement>){e.preventDefault();if(!durationJob||role==='viewer')return;setDurationBusy(true);setDurationError('');try{const r=await fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'duration',id:durationJob.id,duration:Number(editMinutes),expectedDuration:durationJob.duration})});const b=await r.json() as {error?:string};if(!r.ok)throw new Error(b.error);setDurationJob(null);setCancelNotice('Vasketiden er oppdatert.');await load()}catch(e){setDurationError(e instanceof Error?e.message:'Prøv igjen.')}finally{setDurationBusy(false)}}
  const [rescheduleJob,setRescheduleJob]=useState<Job|null>(null),[editDate,setEditDate]=useState(''),[editStart,setEditStart]=useState(''),[rescheduleBusy,setRescheduleBusy]=useState(false),[rescheduleError,setRescheduleError]=useState('');
  function minutesFromTime(value:string){const match=value.match(/^(\d{2}):(\d{2})$/);return match?Number(match[1])*60+Number(match[2]):-1}
- async function saveReschedule(e:React.FormEvent){e.preventDefault();if(!rescheduleJob||role==='viewer')return;setRescheduleBusy(true);setRescheduleError('');try{const r=await fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'reschedule',id:rescheduleJob.id,date:editDate,start:minutesFromTime(editStart),expectedDate:rescheduleJob.date,expectedStart:rescheduleJob.start})});const b=await r.json() as {error?:string;smsWarning?:string};if(!r.ok)throw new Error(b.error);setRescheduleJob(null);setCancelNotice(b.smsWarning?`Timen er flyttet. ${b.smsWarning}`:'Timen er flyttet, og kunden har fått SMS om endringen.');await load()}catch(e){setRescheduleError(e instanceof Error?e.message:'Prøv igjen.')}finally{setRescheduleBusy(false)}}
+ async function saveReschedule(e:React.SubmitEvent<HTMLFormElement>){e.preventDefault();if(!rescheduleJob||role==='viewer')return;setRescheduleBusy(true);setRescheduleError('');try{const r=await fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'reschedule',id:rescheduleJob.id,date:editDate,start:minutesFromTime(editStart),expectedDate:rescheduleJob.date,expectedStart:rescheduleJob.start})});const b=await r.json() as {error?:string;smsWarning?:string};if(!r.ok)throw new Error(b.error);setRescheduleJob(null);setCancelNotice(b.smsWarning?`Timen er flyttet. ${b.smsWarning}`:'Timen er flyttet, og kunden har fått SMS om endringen.');await load()}catch(e){setRescheduleError(e instanceof Error?e.message:'Prøv igjen.')}finally{setRescheduleBusy(false)}}
  const [cancelJob,setCancelJob]=useState<Job|null>(null),[cancelError,setCancelError]=useState(''),[cancelBusy,setCancelBusy]=useState(false),[cancelNotice,setCancelNotice]=useState('');
  async function cancelBooking(){if(!cancelJob||role==='viewer')return;setCancelBusy(true);setCancelError('');try{
    const response=await fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'cancel-booking',id:cancelJob.id})});
@@ -101,8 +101,10 @@ export default function Admin() {
     }
   }
   useEffect(() => {
-    load();
+    void load();
     return () => activeRequest.current?.abort();
+    // load is recreated each render and reads date; re-running on date alone is intended.
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [date]);
   async function action(action: string, extra: Record<string, string> = {}) {
     setBusy(true);
@@ -129,7 +131,7 @@ export default function Admin() {
       setBusy(false);
     }
   }
-  async function login(e: React.FormEvent) {
+  async function login(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     if (await action('login', { username, password })) {
       setPassword('');
@@ -138,7 +140,7 @@ export default function Admin() {
       await load();
     }
   }
-  async function save(e: React.FormEvent) {
+  async function save(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     if (newPassword !== confirm) {
       setError(t("De nye passordene er ikke like."));
@@ -342,7 +344,7 @@ export default function Admin() {
                     {jobs.map((j) => (
                       <article key={j.id} className="job job-card">
                         <div className="job-time">
-                          {timeLabel(j.start)}–{timeLabel(j.start + j.duration)}
+                          {timeLabel(j.start)}-{timeLabel(j.start + j.duration)}
                           <small>{dateLabel(j.date, language)}</small>
                         </div>
                         <div>
@@ -383,9 +385,9 @@ export default function Admin() {
         )}
       </main>
       <AlertDialog open={!!rescheduleJob&&role!=='viewer'} onOpenChange={open=>{if(!open&&!rescheduleBusy)setRescheduleJob(null)}}>
-        <AlertDialogContent className={`cancel-dialog ${styles.dialog}`}><AlertDialogHeader><AlertDialogTitle>{t('Endre dato og tidspunkt')}</AlertDialogTitle><AlertDialogDescription>{rescheduleJob&&<>{rescheduleJob.name}<br/>{t('Nåværende time')}: {dateLabel(rescheduleJob.date,language)} · {timeLabel(rescheduleJob.start)}–{timeLabel(rescheduleJob.start+rescheduleJob.duration)}<br/></>}{t('Vasketid og pris beholdes. Kunden får SMS når endringen lagres.')}</AlertDialogDescription></AlertDialogHeader>
+        <AlertDialogContent className={`cancel-dialog ${styles.dialog}`}><AlertDialogHeader><AlertDialogTitle>{t('Endre dato og tidspunkt')}</AlertDialogTitle><AlertDialogDescription>{rescheduleJob&&<>{rescheduleJob.name}<br/>{t('Nåværende time')}: {dateLabel(rescheduleJob.date,language)} · {timeLabel(rescheduleJob.start)}-{timeLabel(rescheduleJob.start+rescheduleJob.duration)}<br/></>}{t('Vasketid og pris beholdes. Kunden får SMS når endringen lagres.')}</AlertDialogDescription></AlertDialogHeader>
         <form className="duration-editor" onSubmit={saveReschedule}><label>{t('Ny dato')}<input type="date" min={today()} required disabled={rescheduleBusy} value={editDate} onChange={e=>setEditDate(e.target.value)}/></label><label>{t('Ny starttid')}<input type="time" min="08:00" max="14:00" step="900" required disabled={rescheduleBusy} value={editStart} onChange={e=>setEditStart(e.target.value)}/></label>
-        {rescheduleJob&&minutesFromTime(editStart)>=0&&<p className="muted">{t('Ny tid')}: {editDate?dateLabel(editDate,language):''} · {editStart}–{timeLabel(minutesFromTime(editStart)+rescheduleJob.duration)}</p>}
+        {rescheduleJob&&minutesFromTime(editStart)>=0&&<p className="muted">{t('Ny tid')}: {editDate?dateLabel(editDate,language):''} · {editStart}-{timeLabel(minutesFromTime(editStart)+rescheduleJob.duration)}</p>}
         {rescheduleError&&<p className="error" role="alert">{t(rescheduleError)}</p>}
         <AlertDialogFooter><button type="button" className="secondary" disabled={rescheduleBusy} onClick={()=>setRescheduleJob(null)}>{t('Lukk')}</button><button type="submit" className="primary" disabled={rescheduleBusy}>{t(rescheduleBusy?'Lagrer…':'Lagre ny time')}</button></AlertDialogFooter></form></AlertDialogContent>
       </AlertDialog>
@@ -398,7 +400,7 @@ export default function Admin() {
       </AlertDialog>
       <AlertDialog open={!!cancelJob&&role!=='viewer'} onOpenChange={open=>{if(!open&&!cancelBusy)setCancelJob(null)}}>
         <AlertDialogContent className={`cancel-dialog ${styles.dialog}`}>
-          <AlertDialogHeader><AlertDialogTitle>{t('Avbestille denne bilvasken?')}</AlertDialogTitle><AlertDialogDescription>{cancelJob&&<>{cancelJob.name}<br/>{dateLabel(cancelJob.date,language)} · {timeLabel(cancelJob.start)}–{timeLabel(cancelJob.start+cancelJob.duration)}<br/></>}{t('Bestillingen fjernes, og plassen blir tilgjengelig for andre.')}</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogHeader><AlertDialogTitle>{t('Avbestille denne bilvasken?')}</AlertDialogTitle><AlertDialogDescription>{cancelJob&&<>{cancelJob.name}<br/>{dateLabel(cancelJob.date,language)} · {timeLabel(cancelJob.start)}-{timeLabel(cancelJob.start+cancelJob.duration)}<br/></>}{t('Bestillingen fjernes, og plassen blir tilgjengelig for andre.')}</AlertDialogDescription></AlertDialogHeader>
           {cancelError&&<p className="error" role="alert">{t(cancelError)}</p>}
           <AlertDialogFooter><AlertDialogCancel className="secondary" disabled={cancelBusy}>{t('Behold bestillingen')}</AlertDialogCancel><AlertDialogAction className="primary" disabled={cancelBusy} onClick={cancelBooking}>{t(cancelBusy?'Avbestiller…':'Bekreft avbestilling')}</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>

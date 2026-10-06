@@ -27,7 +27,7 @@ function render(){index=0;return UserManager()}
 render();
 states[0]=[{id:'reader',username:'Review reader',active:1,role:'viewer'},{id:'manager',username:'Review manager',active:0,role:'manager'}];
 states[5]=true;
-let tree=render();let selectors=nodes(tree).filter(n=>n.type==='select');
+let tree=render();const selectors=nodes(tree).filter(n=>n.type==='select');
 assert.equal(selectors.length,3);assert.equal(selectors[0].props.value,'viewer');assert.equal(selectors[1].props.value,'viewer');assert.equal(selectors[2].props.value,'manager');
 for(const select of selectors)assert.deepEqual(nodes(select).filter(n=>n.type==='option').map(n=>n.props.value),['viewer','manager']);
 selectors[1].props.onChange({target:{value:'manager'}});await new Promise(setImmediate);assert.deepEqual(requests.pop(),{action:'role',id:'reader',role:'manager'});

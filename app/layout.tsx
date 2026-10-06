@@ -4,10 +4,10 @@ import './site-design.css';
 import { LanguageProvider } from '@/components/language';
 
 export const metadata: Metadata = {
-  title: { default: 'Steam — Bestill bilvask', template: '%s — Steam' },
+  title: { default: 'Steam - Bestill bilvask', template: '%s - Steam' },
   referrer: 'same-origin',
   description:
-    'Bestill innvendig vask, utvendig vask eller begge deler. Åpent 08:00–15:00. Siste starttid er kl. 14:00.',
+    'Bestill innvendig vask, utvendig vask eller begge deler. Åpent 08:00-15:00. Siste starttid er kl. 14:00.',
 };
 
 export default function RootLayout({

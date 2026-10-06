@@ -12,6 +12,7 @@ The approved font-preview design is the visual authority for the public booking 
 - Keyboard focus remains visible and option focus outlines stay within their rows. Motion respects reduced-motion preferences.
 - All public pages share `components/site-header.tsx` (logo, language, Vaskestatus, Ansattinnlogging). The current page is underlined; Vaskestatus is hidden when status tracking is disabled.
 - On phones (≤720px) the step 1 and 2 navigation is a sticky bottom bar with the running price and duration. Step 3 keeps its inline total above the submit button.
+- Visible text uses the plain hyphen for ranges and separators (`08:00-15:00`, `Vaskestatus - Steam`). It never uses the em dash or the en dash (per `docs/skill.md` §9.G).
 - In the calendar, fully booked days are distinct from unavailable ones: a warm hatched tile labelled "Fullt" with no strike-through. Strike-through is reserved for closed, past and out-of-range dates.
 
 ## Redesign scope

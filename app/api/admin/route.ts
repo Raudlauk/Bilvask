@@ -128,7 +128,7 @@ export async function POST(req: Request) {
     }
     if (b.action === 'duration') {
       if(typeof b.id!=='string'||!/^[a-f0-9-]{36}$/.test(b.id)||typeof b.duration!=='number'||!Number.isInteger(b.duration)||b.duration<15||b.duration>240||b.duration%15!==0||typeof b.expectedDuration!=='number')
-        return json({error:'Velg 15–240 minutter i trinn på 15.'},400);
+        return json({error:'Velg 15-240 minutter i trinn på 15.'},400);
       // Check the saved duration and conflicts in the same atomic update.
       const result=await db().prepare(`UPDATE bookings SET duration=?1 WHERE id=?2 AND duration=?3
         AND start+?1<=900 AND (start+?1<=690 OR start>=720)
@@ -169,7 +169,7 @@ export async function POST(req: Request) {
         b.password.length > 200
       )
         return json(
-          { error: 'Oppgi et brukernavn og et nytt passord på 8–200 tegn.' },
+          { error: 'Oppgi et brukernavn og et nytt passord på 8-200 tegn.' },
           400,
         );
       const salt = crypto.randomUUID(),

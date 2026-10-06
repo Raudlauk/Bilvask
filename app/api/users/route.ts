@@ -38,7 +38,7 @@ export async function POST(req:Request) {
     if(role!=='viewer'&&role!=='manager')return json({error:'Ugyldig tilgangsnivå.'},400);
     const username=typeof b.username==='string'?b.username.trim().toLowerCase():'';
     if(!/^[a-z0-9æøå._@-]{2,50}$/.test(username)||typeof b.password!=='string'||b.password.length<8||b.password.length>200)
-      return json({error:'Bruk 2–50 tegn i brukernavnet og 8–200 tegn i passordet.'},400);
+      return json({error:'Bruk 2-50 tegn i brukernavnet og 8-200 tegn i passordet.'},400);
     if(username===(await getAdmin()).username.toLowerCase())return json({error:'Brukernavnet er allerede i bruk.'},409);
     const salt=crypto.randomUUID(),hash=await passwordHash(b.password,salt);
     const result=await db().prepare('INSERT INTO viewers (id,username,hash,salt,role) SELECT ?,?,?,?,? WHERE NOT EXISTS (SELECT 1 FROM admins WHERE lower(username)=?) ON CONFLICT(username) DO NOTHING').bind(crypto.randomUUID(),username,hash,salt,role,username).run();

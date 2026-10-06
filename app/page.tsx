@@ -11,7 +11,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import {
   Droplets,
   Sparkles,
-  ArrowUpRight,
   Clock3,
   ShieldCheck,
   Check,
@@ -41,7 +40,7 @@ export default function Home({ slideBooking = true }: { slideBooking?: boolean }
   const [schedule,setSchedule]=useState({insideMinutes:30,outsideMinutes:30,weekdays:44,statusEnabled:false,largeCarPercent:0,polishEnabled:false,polishMinutes:60,polishPrice:null as number|null,mapsUrl:''}),[scheduleReady,setScheduleReady]=useState(false),[scheduleError,setScheduleError]=useState('');
   useEffect(()=>{const controller=new AbortController();async function refresh(){try{const r=await fetch('/api/booking-settings',{signal:controller.signal});if(!r.ok)throw new Error();const data=await r.json() as {insideMinutes:number;outsideMinutes:number;weekdays:number;statusEnabled:boolean;largeCarPercent:number;polishEnabled:boolean;polishMinutes:number;polishPrice:number|null;mapsUrl:string};setSchedule(data);setScheduleReady(true);setScheduleError('')}catch{if(!controller.signal.aborted){setScheduleReady(false);setScheduleError('Kunne ikke hente bestillingsinnstillingene.')}}}void refresh();const timer=setInterval(()=>void refresh(),30000);window.addEventListener('focus',refresh);return()=>{controller.abort();clearInterval(timer);window.removeEventListener('focus',refresh)}},[priceRevision]);
   const weekdayText=scheduleReady?([1,2,3,4,5,6,0].filter(d=>schedule.weekdays&(1<<d)).map(d=>new Date(Date.UTC(2026,0,4+d)).toLocaleDateString(language==='nb'?'nb-NO':'en-GB',{weekday:'long',timeZone:'UTC'})).join(', ')||t('Ingen åpne bestillingsdager.')):t('Laster innstillinger…');
-  useEffect(()=>{if(!schedule.polishEnabled||!outside)setPolish(false)},[schedule.polishEnabled,outside]);
+  // Keep the customer's polish choice while exterior wash is off; it only counts when available.
   const selectedPolish=polish&&schedule.polishEnabled&&outside;
   const price=bookingTotal(prices,inside,outside,fluid,selectedPolish,schedule.polishPrice,largeCar,schedule.largeCarPercent);
   return (
@@ -156,7 +155,7 @@ export default function Home({ slideBooking = true }: { slideBooking?: boolean }
               <Clock3 size={20} />
               <div>
                 <strong>{t("Åpningstider")}</strong>
-                <p> {t("08:00–15:00 · norsk tid")} <br /> {t("Siste bestillingstid kl. 14:00")} <br />{t('Pause 11:30–12:00')}<br />{t('Dager for bestilling')}: {weekdayText} </p>
+                <p> {t("08:00-15:00 · norsk tid")} <br /> {t("Siste bestillingstid kl. 14:00")} <br />{t('Pause 11:30-12:00')}<br />{t('Dager for bestilling')}: {weekdayText} </p>
               </div>
             </div>
           </aside>
@@ -223,7 +222,7 @@ function Booking({ slideBooking,step,setStep,inside, outside,fluid,price,priceRe
       if(month > data.maxDate.slice(0,7)) setMonth(data.maxDate.slice(0,7));
       if(date > data.maxDate){setDate('');setStart(null);setSlots([]);}
       if(data.fullDates.includes(date)){setStart(null);setSlots([]);}
-    }catch(e){if(!controller.signal.aborted){setCalendarError('Kunne ikke hente ledige dager. Prøv igjen.');setSlots([]);setStart(null)}}finally{pending=false;if(!controller.signal.aborted)setLoading(false)}}
+    }catch{if(!controller.signal.aborted){setCalendarError('Kunne ikke hente ledige dager. Prøv igjen.');setSlots([]);setStart(null)}}finally{pending=false;if(!controller.signal.aborted)setLoading(false)}}
     void refresh();const timer=setInterval(()=>{if(document.visibilityState==='visible')void refresh()},30000);
     const onFocus=()=>{void refresh()};window.addEventListener('focus',onFocus);
     return()=>{controller.abort();clearInterval(timer);window.removeEventListener('focus',onFocus)};
@@ -250,7 +249,7 @@ function Booking({ slideBooking,step,setStep,inside, outside,fluid,price,priceRe
     d.setUTCMonth(d.getUTCMonth() + delta);
     setMonth(d.toISOString().slice(0, 7));
   }
-  async function submit(e: React.FormEvent) {
+  async function submit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     if (slideBooking && (step !== 3 || !validTime || !priceReady || busy || redirecting)) return;
     setBusy(true);
@@ -371,7 +370,7 @@ function Booking({ slideBooking,step,setStep,inside, outside,fluid,price,priceRe
                 aria-pressed={start === s}
                 onClick={() => setStart(s)}
               >
-                {timeLabel(s)}–{timeLabel(s + duration)}
+                {timeLabel(s)}-{timeLabel(s + duration)}
               </button>
             ))}
           </div>
@@ -452,7 +451,7 @@ function Booking({ slideBooking,step,setStep,inside, outside,fluid,price,priceRe
       <p className="muted">
         {start === null
           ? t("Velg et tidspunkt for å fullføre bestillingen.")
-          : `${dateLabel(date, language)} · ${timeLabel(start)}–${timeLabel(start + duration)}`}
+          : `${dateLabel(date, language)} · ${timeLabel(start)}-${timeLabel(start + duration)}`}
       </p>
       </div>
     </form>

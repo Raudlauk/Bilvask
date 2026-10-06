@@ -10,7 +10,7 @@ export async function POST(req:Request){
     if((await getAdmin()).version===1)return json({error:'Bytt standardpassordet først.'},403);
     const {enabled,minutes,price}=await readBody(req);
     if(typeof enabled!=='boolean'||typeof minutes!=='number'||!Number.isInteger(minutes)||minutes<15||minutes>180||minutes%15!==0|| (price!==null&&(typeof price!=='number'||!Number.isInteger(price)||price<0||price>10000000)))
-      return json({error:'Oppgi gyldig pris og 15–180 minutter i trinn på 15.'},400);
+      return json({error:'Oppgi gyldig pris og 15-180 minutter i trinn på 15.'},400);
     await db().prepare('INSERT INTO polish_settings(id,enabled,minutes,price) VALUES(1,?,?,?) ON CONFLICT(id) DO UPDATE SET enabled=excluded.enabled,minutes=excluded.minutes,price=excluded.price').bind(Number(enabled),minutes,price).run();
     return json({ok:true});
   }catch{return json({error:'Kunne ikke lagre innstillinger for polering.'},503)}

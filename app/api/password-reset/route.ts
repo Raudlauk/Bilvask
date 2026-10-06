@@ -25,7 +25,7 @@ export async function POST(req:Request){
   if(body.action==='reset'){
    if(await throttle(req,'reset-submit',10)||await throttle(req,'reset-submit-global',30,true))return json({error:'For mange forsøk. Prøv igjen om 15 minutter.'},429);
    if(typeof body.token!=='string'||!/^[a-f0-9-]{72}$/.test(body.token))return json({error:'Lenken er ugyldig eller utløpt. Be om en ny lenke.'},400);
-   if(typeof body.password!=='string'||body.password.length<8||body.password.length>200)return json({error:'Bruk et passord på 8–200 tegn.'},400);
+   if(typeof body.password!=='string'||body.password.length<8||body.password.length>200)return json({error:'Bruk et passord på 8-200 tegn.'},400);
    const salt=crypto.randomUUID(),hash=await passwordHash(body.password,salt),token=await digest(body.token);
    // One atomic compare-and-update: changing version consumes every outstanding
    // reset link and revokes every existing session, including concurrent resets.

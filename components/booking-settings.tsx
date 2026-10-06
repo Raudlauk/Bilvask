@@ -23,7 +23,7 @@ export function BookingSettings({mapsOnly=false}:{mapsOnly?:boolean}) {
     }).catch(e => { if (!controller.signal.aborted) setError(e.message); });
     return () => controller.abort();
   }, [retry]);
-  async function save(event: React.FormEvent) {
+  async function save(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy(true); setError(''); setSaved(false);
     if(mapsOnly&&!validMapsUrl(mapsUrl.trim())){setError(mapsUrlError);setBusy(false);return;}
     try {
@@ -59,7 +59,7 @@ export function BookingSettings({mapsOnly=false}:{mapsOnly?:boolean}) {
       {!mapsOnly&&<><label>{t('Antall uker frem i tid')}<input type="number" min="1" max="52" step="1" required disabled={busy} value={weeks} onChange={e => { setWeeks(e.target.value); setSaved(false); }} /></label>
       <p className="muted">{t('Velg mellom 1 og 52 uker. Siste dato er inkludert.')}</p>
       <div className="form-grid"><label>{t('Innvendig vask')} · {t('minutter')}<input type="number" required min="15" max="120" step="15" disabled={busy} value={insideMinutes} onChange={e=>{setInsideMinutes(e.target.value);setSaved(false)}}/></label><label>{t('Utvendig vask')} · {t('minutter')}<input type="number" required min="15" max="120" step="15" disabled={busy} value={outsideMinutes} onChange={e=>{setOutsideMinutes(e.target.value);setSaved(false)}}/></label></div>
-      <p className="muted">{t('Velg 15–120 minutter per vask. Ved begge vasker legges tidene sammen. Eksisterende bestillinger beholder vasketiden.')}</p>
+      <p className="muted">{t('Velg 15-120 minutter per vask. Ved begge vasker legges tidene sammen. Eksisterende bestillinger beholder vasketiden.')}</p>
       <fieldset className="weekday-settings" disabled={busy}><legend>{t('Dager for bestilling')}</legend>{[[1,'Mandag'],[2,'Tirsdag'],[3,'Onsdag'],[4,'Torsdag'],[5,'Fredag']].map(([day,label])=><label key={day}><input type="checkbox" checked={!!(weekdays & (1<<Number(day)))} onChange={()=>{setWeekdays(v=>v^(1<<Number(day)));setSaved(false)}}/>{t(String(label))}</label>)}</fieldset>
       <p className="muted">{t(weekdays?'Stengte enkeltdager gjelder fortsatt. Eksisterende bestillinger beholdes.':'Ingen ukedager er valgt. Nye bestillinger er stengt.')}</p>
       </>}{mapsOnly&&<><label>{t('Google Maps-lenke')}<input type="url" required maxLength={2048} disabled={busy} value={mapsUrl} onChange={e=>{setMapsUrl(e.target.value);setSaved(false)}} placeholder="https://maps.app.goo.gl/..." /></label><p className="muted">{t('Brukes av «Finn oss» på bestillingssiden.')}</p></>}

@@ -4,9 +4,9 @@ import translations from '@/lib/translations.json';
 import {Select,SelectTrigger,SelectValue,SelectContent,SelectItem} from '@/components/ui/select';
 type Language='nb'|'en';
 const Context=createContext({language:'nb' as Language,setLanguage:(_:Language)=>{},t:(text:string)=>text});
-const defaultTitle='Steam — Bestill bilvask';
-// Page titles come from route metadata ("<page> — Steam"); only the page part is translated.
-function englishTitle(title:string){if(title===defaultTitle)return 'Steam — Book your car wash';const page=title.match(/^(.*) — Steam$/)?.[1];return page?((translations as Record<string,string>)[page]??page)+' — Steam':title}
+const defaultTitle='Steam - Bestill bilvask';
+// Page titles come from route metadata ("<page> - Steam"); only the page part is translated.
+function englishTitle(title:string){if(title===defaultTitle)return 'Steam - Book your car wash';const page=title.match(/^(.*) - Steam$/)?.[1];return page?((translations as Record<string,string>)[page]??page)+' - Steam':title}
 export function LanguageProvider({children}:{children:React.ReactNode}){
  const [language,setLanguage]=useState<Language>('nb');
  const pageTitle=useRef('');

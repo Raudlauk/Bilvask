@@ -390,6 +390,10 @@ External notification failure should be reported separately.
 
 Staff and customer moves and cancellations share `moveBooking` and `cancelBooking` in `lib/booking-changes.ts`, so both paths keep the same atomic conflict checks and SMS reminder handling.
 
+### Site name
+
+The public name (default "Steam") is stored in `booking_settings.site_name` and edited under Admin > Bestillingsinnstillinger. The root layout reads it once per request with `getSiteName()` (`lib/site-name.ts`) for page titles and passes it to `SiteNameProvider`, so client components use `useSiteName()` instead of fetching. SMS texts, the password-reset email and the calendar invite read it server-side. `getSiteName()` falls back to the default if the column is missing, so code can deploy before migration 0018. Saving a name still needs the migration. The SMS sender ID is separate: it is registered with LINK Mobility (`LINK_SMS_SENDER`).
+
 ### Customer self-service changes
 
 When enabled in admin (Vaskestatus settings, off by default, and only while status is enabled), customers can move or cancel their own booking from `/status` through `POST /api/customer-booking`.

@@ -10,6 +10,8 @@ import { ClosedDates } from '@/components/closed-dates';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ContactSection } from '@/components/contact';
 import { SettingsSaveBar, SettingsSaveProvider, useSettingsStore } from '@/components/settings-save';
+import { useSiteName } from '@/components/site-name';
+import { SiteNameSettings } from '@/components/site-name-settings';
 import {PriceEditor} from '@/components/price-editor';
 import {money} from '@/lib/prices';
 import {AlertDialog,AlertDialogContent,AlertDialogHeader,AlertDialogTitle,AlertDialogDescription,AlertDialogFooter,AlertDialogCancel,AlertDialogAction} from '@/components/ui/alert-dialog';
@@ -35,7 +37,7 @@ type Job = { status:number;
 };
 type CustomerChange={id:string;action:'moved'|'cancelled';name:string;phone:string;old_date:string;old_start:number;new_date:string|null;new_start:number|null;created:number};
 export default function Admin() {
- const {t,language}=useLanguage();
+ const {t,language}=useLanguage();const siteName=useSiteName();
  const activeRequest = useRef<AbortController | null>(null);
  const [statusEnabled,setStatusEnabled]=useState(false);
  // Settings sections share one save bar; leaving with unsaved changes asks first.
@@ -177,7 +179,7 @@ export default function Admin() {
       <header>
 <div className="header-identity"><a href="https://ynvekst.no/" aria-label="Ytre Namdal Vekst"><img className="yn-logo" src="/yn-vekst-logo.svg" width="174" height="55" alt="Ytre Namdal Vekst" /></a>
         <a className="brand" href="/">
-          <Droplets /> Steam<span>{t("ANSATTSIDE")}</span>
+          <Droplets /> {siteName}<span>{t("ANSATTSIDE")}</span>
         </a>
         </div><div className="header-tools"><LanguagePicker /><a href="/" className="worker-link">
           <ArrowLeft size={16} /> {t("Tilbake til bestilling")} </a>
@@ -261,7 +263,7 @@ export default function Admin() {
                 <TabsTrigger value="booking" disabled={requiresPasswordChange} aria-label={t('Bestillingsinnstillinger')}><span className="tab-label-wide">{t('Bestillingsinnstillinger')}</span><span className="tab-label-mobile" aria-hidden="true">{t('Bestilling')}</span></TabsTrigger>
               </TabsList>}
               {role==='admin'&&<TabsContent value="booking">
-                {!requiresPasswordChange && <><div className="settings-stack"><BookingSettings /><ClosedDates /><PriceEditor /><PolishSettings /><StatusSettings /><ContactSection edit /><BookingSettings mapsOnly /></div><SettingsSaveBar /></>}
+                {!requiresPasswordChange && <><div className="settings-stack"><SiteNameSettings /><BookingSettings /><ClosedDates /><PriceEditor /><PolishSettings /><StatusSettings /><ContactSection edit /><BookingSettings mapsOnly /></div><SettingsSaveBar /></>}
               </TabsContent>}
 
             {error && (

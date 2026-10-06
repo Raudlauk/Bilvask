@@ -1,5 +1,6 @@
 import {cookie,db,digest,json,passwordHash,readBody,sameOrigin,throttle} from '@/lib/server';
 import {mailConfig,sendResetEmail} from '@/lib/reset-mail';
+import {getSiteName} from '@/lib/site-name';
 const generic={message:'Hvis adressen er registrert, får du en lenke på e-post. Sjekk også søppelpost.'};
 export async function POST(req:Request){
  if(!sameOrigin(req))return json({error:'Ugyldig forespørsel.'},403);
@@ -15,7 +16,7 @@ export async function POST(req:Request){
    if(!admin||admin.recovery_email!==email||admin.version===1)return json(generic);
    const token=crypto.randomUUID()+crypto.randomUUID(),hash=await digest(token);
    await db().batch([db().prepare('DELETE FROM password_resets WHERE expires<?').bind(Date.now()),db().prepare('INSERT INTO password_resets (token,email,version,expires) VALUES (?,?,?,?)').bind(hash,email,admin.version,Date.now()+900000)]);
-   try{await sendResetEmail(config,email,token,body.language==='en',hash)}catch(error){
+   try{await sendResetEmail(config,email,token,body.language==='en',hash,await getSiteName())}catch(error){
     // Server-side only: no address or token, just why delivery failed (see `wrangler tail`).
     console.error('Password reset email failed:',error instanceof Error?error.message:'unknown error');
     await db().prepare('DELETE FROM password_resets WHERE token=?').bind(hash).run();

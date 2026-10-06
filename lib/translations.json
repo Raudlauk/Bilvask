@@ -427,5 +427,12 @@
   "Kontaktinformasjon": "Contact information",
   "Ikke en bestillingsdag": "Not a booking day",
   "Overstrøkne dager er ikke bestillingsdager eller er passert. Datoer merket «Stengt» er allerede stengt.": "Struck-through days are not booking days or have passed. Dates marked “Closed” are already closed.",
-  "Velg en dato i kalenderen.": "Choose a date in the calendar."
+  "Velg en dato i kalenderen.": "Choose a date in the calendar.",
+  "Navn på nettsiden": "Site name",
+  "Vises øverst på sidene, i fanetittelen, i SMS-er til kunder og i kalenderinvitasjonen.": "Shown at the top of every page, in the browser tab, in texts to customers and in the calendar invite.",
+  "Navn": "Name",
+  "Avsendernavnet på SMS (for eksempel «Steam») er registrert hos LINK Mobility og endres der.": "The SMS sender name (for example “Steam”) is registered with LINK Mobility and is changed there.",
+  "Bruk 1-40 tegn, uten < og >.": "Use 1-40 characters, without < and >.",
+  "Se hvor vi holder til, og få veibeskrivelse i Google Maps.": "See where we are and get directions in Google Maps.",
+  "Kunne ikke lagre navnet.": "Could not save the name."
 }

@@ -10,6 +10,7 @@ export const bookingSettings = sqliteTable('booking_settings', {
   weekdays: integer('weekdays').notNull().default(44),
   mapsUrl: text('maps_url').notNull().default('https://maps.app.goo.gl/eLbrjaFsUCS2t9VNA'),
   customerChanges: integer('customer_changes').notNull().default(0),
+  siteName: text('site_name').notNull().default('Steam'),
 });
 export const prices=sqliteTable('prices',{id:integer('id').primaryKey(),inside:integer('inside'),outside:integer('outside'),fluid:integer('fluid')});
 export const contact = sqliteTable('contact', {

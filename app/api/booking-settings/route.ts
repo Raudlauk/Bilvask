@@ -1,6 +1,7 @@
 import { authorized, db, getAdmin, json, readBody, sameOrigin } from '@/lib/server';
 import { validMapsUrl, mapsUrlError } from '@/lib/maps';
 import { getBookingSettings } from '@/lib/booking-settings';
+import { SITE_NAME_MAX, validSiteName } from '@/lib/brand';
 
 export async function GET() {
   try { return json(await getBookingSettings()); }
@@ -12,11 +13,18 @@ export async function POST(req: Request) {
   try {
     if (!await authorized(req)) return json({ error: 'Logg inn på nytt.' }, 401);
     if ((await getAdmin()).version === 1) return json({ error: 'Bytt standardpassordet først.' }, 403);
-    const { statusEnabled, customerChanges, action, weeksAhead, insideMinutes, outsideMinutes, weekdays, mapsUrl, largeCarPercent } = await readBody(req);
+    const body = await readBody(req);
+    const { statusEnabled, customerChanges, action, weeksAhead, insideMinutes, outsideMinutes, weekdays, mapsUrl, largeCarPercent } = body;
     if(action==='status-enabled'){
       if(typeof statusEnabled!=='boolean'||(customerChanges!==undefined&&typeof customerChanges!=='boolean'))return json({error:'Ugyldig forespørsel.'},400);
       if(customerChanges===undefined)await db().prepare('INSERT INTO booking_settings(id,status_enabled) VALUES(1,?) ON CONFLICT(id) DO UPDATE SET status_enabled=excluded.status_enabled').bind(Number(statusEnabled)).run();
       else await db().prepare('INSERT INTO booking_settings(id,status_enabled,customer_changes) VALUES(1,?,?) ON CONFLICT(id) DO UPDATE SET status_enabled=excluded.status_enabled,customer_changes=excluded.customer_changes').bind(Number(statusEnabled),Number(customerChanges)).run();
+      return json({ok:true});
+    }
+    if(action==='site-name'){
+      const {siteName}=body;
+      if(!validSiteName(siteName))return json({error:`Bruk 1-${SITE_NAME_MAX} tegn, uten < og >.`},400);
+      await db().prepare('INSERT INTO booking_settings(id,site_name) VALUES(1,?) ON CONFLICT(id) DO UPDATE SET site_name=excluded.site_name').bind(siteName.trim()).run();
       return json({ok:true});
     }
     if(action==='maps'){

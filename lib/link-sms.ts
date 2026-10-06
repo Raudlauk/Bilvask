@@ -1,6 +1,7 @@
 import { env } from 'cloudflare:workers';
 import { db } from '@/lib/server';
 import { dateLabel, timeLabel, ZONE } from '@/lib/schedule';
+import { getSiteName } from '@/lib/site-name';
 
 type SmsEnv = {
   LINK_SMS_ENABLED?: string;
@@ -160,9 +161,9 @@ export async function scheduleReminder(booking: BookingSmsData) {
   const sendAt = new Date(appointmentUtc(booking.date, booking.start).getTime() - 24 * 60 * 60 * 1000);
   // Do not schedule a "24 hour" reminder if that point has already passed.
   if (sendAt.getTime() <= Date.now() + 60_000) return { skipped: true } as const;
-  const address = await addressLine();
+  const [address, site] = await Promise.all([addressLine(), getSiteName()]);
   const text = [
-    `Påminnelse fra Steam Bilvask: Du har bilvask i morgen ${dateLabel(booking.date)} kl. ${timeLabel(booking.start)}.`,
+    `Påminnelse fra ${site}: Du har bilvask i morgen ${dateLabel(booking.date)} kl. ${timeLabel(booking.start)}.`,
     address ? `Sted: ${address}.` : '',
     'Velkommen!',
   ].filter(Boolean).join(' ');
@@ -173,9 +174,9 @@ export async function scheduleReminder(booking: BookingSmsData) {
 }
 
 export async function sendBookingConfirmation(booking: BookingSmsData) {
-  const address = await addressLine();
+  const [address, site] = await Promise.all([addressLine(), getSiteName()]);
   const text = [
-    `Hei ${booking.name}! Bestillingen din hos Steam Bilvask er bekreftet ${dateLabel(booking.date)} kl. ${timeLabel(booking.start)}.`,
+    `Hei ${booking.name}! Bestillingen din hos ${site} er bekreftet ${dateLabel(booking.date)} kl. ${timeLabel(booking.start)}.`,
     address ? `Sted: ${address}.` : '',
     'Velkommen!',
   ].filter(Boolean).join(' ');
@@ -183,9 +184,9 @@ export async function sendBookingConfirmation(booking: BookingSmsData) {
 }
 
 export async function sendBookingChanged(booking: BookingSmsData, previous: { date: string; start: number }) {
-  const address = await addressLine();
+  const [address, site] = await Promise.all([addressLine(), getSiteName()]);
   const text = [
-    `Hei ${booking.name}! Timen din hos Steam Bilvask er endret fra ${dateLabel(previous.date)} kl. ${timeLabel(previous.start)} til ${dateLabel(booking.date)} kl. ${timeLabel(booking.start)}.`,
+    `Hei ${booking.name}! Timen din hos ${site} er endret fra ${dateLabel(previous.date)} kl. ${timeLabel(previous.start)} til ${dateLabel(booking.date)} kl. ${timeLabel(booking.start)}.`,
     address ? `Sted: ${address}.` : '',
     'Velkommen!',
   ].filter(Boolean).join(' ');
@@ -193,6 +194,7 @@ export async function sendBookingChanged(booking: BookingSmsData, previous: { da
 }
 
 export async function sendBookingCancelled(booking: BookingSmsData) {
-  const text = `Hei ${booking.name}! Timen din hos Steam Bilvask ${dateLabel(booking.date)} kl. ${timeLabel(booking.start)} er avbestilt. Kontakt oss dersom dette ikke stemmer.`;
+  const site = await getSiteName();
+  const text = `Hei ${booking.name}! Timen din hos ${site} ${dateLabel(booking.date)} kl. ${timeLabel(booking.start)} er avbestilt. Kontakt oss dersom dette ikke stemmer.`;
   return send(text, booking.phone, `${booking.id}:cancelled:${Date.now()}`);
 }

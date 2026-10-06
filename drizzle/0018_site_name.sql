@@ -1,0 +1,1 @@
+ALTER TABLE `booking_settings` ADD `site_name` text DEFAULT 'Steam' NOT NULL;

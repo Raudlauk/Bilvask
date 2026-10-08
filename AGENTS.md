@@ -119,6 +119,8 @@ D1 is the **only active database**. A Supabase Postgres schema exists as a futur
 
 ## Deeper docs (load only when relevant)
 
+- `HANDOVER.md`: hosting, deployment, migrations, secrets and unfinished work. Read it before deploying or changing the database.
+
 - `docs/ARCHITECTURE.md`: boundaries, flows, invariants, roles, and a change map. Read it before cross-module, booking, auth, or DB work.
 - `README.md`: setup, environment variables, deployment checklist.
 - `docs/LINK-SMS-SETUP.md`: LINK Mobility configuration.

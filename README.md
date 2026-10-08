@@ -16,6 +16,7 @@ Do not assume D1 and Supabase are synchronized.
 
 Start here, then load deeper documentation only when needed:
 
+- [`HANDOVER.md`](./HANDOVER.md) — start here when taking over: hosting, deployment, migrations, secrets, unfinished work.
 - [`AGENTS.md`](./AGENTS.md) — agent instructions: commands, code map, invariants, conventions (loaded by Claude Code via `CLAUDE.md`).
 - [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — system boundaries, data flow, ownership, invariants, security boundaries, and database migration direction.
 - [`docs/LINK-SMS-SETUP.md`](./docs/LINK-SMS-SETUP.md) — LINK Mobility configuration and reminder behavior.

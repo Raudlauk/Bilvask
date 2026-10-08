@@ -13,7 +13,13 @@ import {
   sameOrigin,
   sessionToken,
   throttle,
+  throttleKey,
+  clearThrottle,
+  clientIp,
 } from '@/lib/server';
+// Failed staff logins allowed per 15 minutes before blocking.
+const LOGIN_MAX_FAILURES_PER_USER = 5;
+const LOGIN_MAX_FAILURES_PER_IP = 10;
 import { validDate } from '@/lib/schedule';
 import { cancelBooking, moveBooking } from '@/lib/booking-changes';
 export async function GET(req: Request) {
@@ -52,7 +58,12 @@ export async function POST(req: Request) {
   try {
     const b = await readBody(req);
     if (b.action === 'login') {
-      if (await throttle(req, 'login', 10) || await throttle(req, 'login-account', 30, true))
+      // Limits per username and per IP. Each attempt reserves a slot (atomic under
+      // concurrency) and a successful login clears both, so only failures add up.
+      // No site-wide limit: that would let anyone lock every staff member out.
+      const loginName = typeof b.username === 'string' ? b.username.trim().toLowerCase().slice(0, 100) : '';
+      const ip = clientIp(req);
+      if (await throttleKey('login-user', loginName, LOGIN_MAX_FAILURES_PER_USER) || await throttleKey('login-ip', ip, LOGIN_MAX_FAILURES_PER_IP))
         return json(
           { error: 'For mange forsøk. Prøv igjen om 15 minutter.' },
           429,
@@ -70,6 +81,7 @@ export async function POST(req: Request) {
         !validPassword
       )
         return json({ error: 'Feil brukernavn eller passord.' }, 401);
+      await Promise.all([clearThrottle('login-user', loginName), clearThrottle('login-ip', ip)]);
       const token = crypto.randomUUID() + crypto.randomUUID();
       await db().batch([
         db().prepare('DELETE FROM sessions WHERE expires<?').bind(Date.now()),

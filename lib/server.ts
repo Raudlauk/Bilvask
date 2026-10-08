@@ -120,10 +120,15 @@ export async function currentUser(req: Request) {
 export function cookie(req: Request, token: string, age = 28800) {
   return `gleam_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${age}${new URL(req.url).protocol === 'https:' ? '; Secure' : ''}`;
 }
+export function clientIp(req: Request) {
+  return req.headers.get('cf-connecting-ip') || 'local';
+}
 export async function throttle(req: Request, bucket: string, max: number, account = false) {
-  const key = await digest(
-      bucket + ':' + (account ? 'shared-admin' : (req.headers.get('cf-connecting-ip') || 'local')),
-    ),
+  return throttleKey(bucket, account ? 'shared-admin' : clientIp(req), max);
+}
+/** Counts an attempt for bucket+id within a 15-minute window; true once more than max. */
+export async function throttleKey(bucket: string, id: string, max: number) {
+  const key = await digest(bucket + ':' + id),
     now = Date.now();
   const row = await db()
     .prepare(
@@ -132,4 +137,7 @@ export async function throttle(req: Request, bucket: string, max: number, accoun
     .bind(key, now + 900000, now, now)
     .first<{ count: number }>();
   return (row?.count || 0) > max;
+}
+export async function clearThrottle(bucket: string, id: string) {
+  await db().prepare('DELETE FROM attempts WHERE key=?').bind(await digest(bucket + ':' + id)).run();
 }

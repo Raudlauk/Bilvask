@@ -499,7 +499,7 @@ Session tokens are hashed before persistence.
 
 Mutating routes use same-origin checks to reduce CSRF exposure.
 
-Rate limiting is persisted in the `attempts` table.
+Rate limiting is persisted in the `attempts` table. Staff login allows 5 failed attempts per username and 10 per IP address within 15 minutes; a successful login clears both counters. There is deliberately no site-wide login limit, because it would let anyone lock every staff member out.
 
 ---
 

@@ -66,6 +66,7 @@ export default function Admin() {
     [date, setDate] = useState(''),
     [jobs, setJobs] = useState<Job[]>([]),
     [customerChanges, setCustomerChanges] = useState<CustomerChange[]>([]),
+    [smsCapReached, setSmsCapReached] = useState(false),
     [error, setError] = useState(''),
     [message, setMessage] = useState(''),
     [busy, setBusy] = useState(false),
@@ -84,7 +85,7 @@ export default function Admin() {
       const b = (await r.json()) as {
         error?: string;
         username: string;
-        bookings: Job[];statusEnabled:boolean;customerChanges?:CustomerChange[];
+        bookings: Job[];statusEnabled:boolean;customerChanges?:CustomerChange[];smsCapReached?:boolean;
         requiresPasswordChange?: boolean;
         role:'admin'|'viewer'|'manager';
       };
@@ -93,6 +94,7 @@ export default function Admin() {
         return;
       }
       setCustomerChanges(r.ok ? b.customerChanges ?? [] : []);
+      setSmsCapReached(r.ok && !!b.smsCapReached);
       if (!r.ok) throw new Error(b.error);
       setStatusEnabled(b.statusEnabled);setRole(b.role);
       if(b.role==='viewer'){setCancelJob(null);setDurationJob(null);setRescheduleJob(null);}
@@ -348,6 +350,7 @@ export default function Admin() {
                     <RefreshCw size={18} />
                   </button>
                 </div>
+                {smsCapReached&&<p className="notice sms-cap-notice" role="status">{t('Dagens grense på 100 SMS er nådd. Nye SMS sendes ikke før i morgen, men bestillinger fungerer som vanlig.')}</p>}
                 {customerChanges.length>0&&<section className="panel customer-changes" aria-labelledby="customer-changes-title">
                   <h2 id="customer-changes-title">{t('Endringer fra kunder')} <small className="muted">{t('siste 7 dager')}</small></h2>
                   <ul>{customerChanges.map(c=><li key={c.id} className={c.action}>

@@ -22,6 +22,7 @@ const LOGIN_MAX_FAILURES_PER_USER = 5;
 const LOGIN_MAX_FAILURES_PER_IP = 10;
 import { validDate } from '@/lib/schedule';
 import { cancelBooking, moveBooking } from '@/lib/booking-changes';
+import { SMS_DAILY_CAP, smsEnabled, smsSentToday } from '@/lib/link-sms';
 export async function GET(req: Request) {
   try {
     const user = await currentUser(req);
@@ -47,7 +48,7 @@ export async function GET(req: Request) {
       if(!row.status_code)row.status_code=await bookingCode(row.id);
     }
     const customerChanges=(await db().prepare('SELECT id,action,name,phone,old_date,old_start,new_date,new_start,created FROM booking_changes WHERE created>? ORDER BY created DESC LIMIT 20').bind(Date.now()-7*86400000).all()).results;
-    return json({ statusEnabled:(await getBookingSettings()).statusEnabled,username: user.username, role:user.role, bookings: rows.results, customerChanges });
+    return json({ statusEnabled:(await getBookingSettings()).statusEnabled,username: user.username, role:user.role, bookings: rows.results, customerChanges, smsCapReached: smsEnabled() && (await smsSentToday()) >= SMS_DAILY_CAP });
   } catch (error) {
     if(error instanceof SyntaxError)return json({error: 'Ugyldig forespørsel.'},400);
     return json({ error: 'Kunne ikke laste arbeidslisten. Prøv igjen.' }, 503);

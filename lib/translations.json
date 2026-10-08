@@ -434,5 +434,6 @@
   "Avsendernavnet på SMS (for eksempel «Steam») er registrert hos LINK Mobility og endres der.": "The SMS sender name (for example “Steam”) is registered with LINK Mobility and is changed there.",
   "Bruk 1-40 tegn, uten < og >.": "Use 1-40 characters, without < and >.",
   "Se hvor vi holder til, og få veibeskrivelse i Google Maps.": "See where we are and get directions in Google Maps.",
-  "Kunne ikke lagre navnet.": "Could not save the name."
+  "Kunne ikke lagre navnet.": "Could not save the name.",
+  "Dagens grense på 100 SMS er nådd. Nye SMS sendes ikke før i morgen, men bestillinger fungerer som vanlig.": "Today's limit of 100 texts has been reached. No more texts are sent until tomorrow, but bookings work as usual."
 }

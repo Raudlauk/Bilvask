@@ -435,6 +435,8 @@ steam-booking-reminder-{bookingId}
 
 This allows the existing reminder to be cancelled when a booking is moved or removed.
 
+Cost guard: at most `SMS_DAILY_CAP` (100) SMS per Oslo day are sent, scheduled reminders included. The count lives in the `attempts` table. Beyond the cap, `send()` throws before calling LINK, callers report it as an SMS warning, and the admin work list shows a notice. Bookings are not affected.
+
 Phone numbers are stored locally as eight Norwegian digits and converted to international format before delivery.
 
 Example:

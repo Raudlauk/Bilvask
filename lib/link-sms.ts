@@ -1,6 +1,6 @@
 import { env } from 'cloudflare:workers';
-import { db } from '@/lib/server';
-import { dateLabel, timeLabel, ZONE } from '@/lib/schedule';
+import { db, digest } from '@/lib/server';
+import { dateLabel, timeLabel, today, ZONE } from '@/lib/schedule';
 import { getSiteName } from '@/lib/site-name';
 
 type SmsEnv = {
@@ -27,6 +27,26 @@ type BookingSmsData = {
   start: number;
   duration: number;
 };
+
+// Cost guard: at most this many SMS (including scheduled reminders) per Oslo day.
+// Bookings keep working when the cap is hit; only texts stop until tomorrow.
+export const SMS_DAILY_CAP = 100;
+const smsDayKey = async () => digest('sms-day:' + today());
+
+/** Reserves one SMS for today; false once the daily cap is used up. */
+async function reserveSms() {
+  const row = await db()
+    .prepare('INSERT INTO attempts (key,count,until) VALUES (?,1,?) ON CONFLICT(key) DO UPDATE SET count=count+1 RETURNING count')
+    .bind(await smsDayKey(), Date.now() + 48 * 3600000)
+    .first<{ count: number }>();
+  return (row?.count || 0) <= SMS_DAILY_CAP;
+}
+
+/** How many SMS were sent or attempted today (for the staff warning). */
+export async function smsSentToday() {
+  const row = await db().prepare('SELECT count FROM attempts WHERE key=?').bind(await smsDayKey()).first<{ count: number }>();
+  return Math.min(row?.count ?? 0, SMS_DAILY_CAP);
+}
 
 let cachedToken: { value: string; expiresAt: number } | null = null;
 
@@ -113,6 +133,7 @@ async function addressLine() {
 
 async function send(text: string, phone: string, referenceId: string, schedule?: { absolute: string; tag: string }) {
   if (!smsEnabled()) return { skipped: true } as const;
+  if (!(await reserveSms())) throw new Error(`Daily SMS cap of ${SMS_DAILY_CAP} reached; not sent`);
   const token = await bearerToken();
   const sender = config().LINK_SMS_SENDER?.trim() || 'Steam';
   const payload = [{
